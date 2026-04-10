@@ -547,7 +547,7 @@
             </div>
         </div>
 
-        <div id="modal-reset-bot" class="modal">
+        <div id="modal-reset" class="modal">
             <div class="modal-content" style="background-color: #222; margin: 10% auto; padding: 20px; border: 1px solid #444; width: 80%; max-width: 500px; border-radius: 8px; color: #eee;">
                 <span class="close-reset" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
                 
@@ -1942,15 +1942,13 @@
                 //  RESET BOT BUTTON LOGIC (Merged & Safe)
                 // ==========================================
                 const btnReset = document.getElementById("btn-reset-bot");
-
-                // SAFETY CHECK: Only run if button exists (Admin Mode)
                 if (btnReset) {
-                    
-                    // 1. Add the Click Listener (To open the modal)
                     btnReset.addEventListener('click', function() {
-                        // Only open if not disabled
-                        if (!btnReset.disabled) {
-                            document.getElementById('modal-reset').style.display = 'block';
+                        const modal = document.getElementById('modal-reset');
+                        if (modal) {
+                            modal.style.display = 'block';
+                        } else {
+                            console.error("Reset modal not found in DOM!");
                         }
                     });
 

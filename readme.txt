@@ -1,10 +1,15 @@
 CryptoPi: Autonomous Market-Regime Trading Engine
 CryptoPi is a modular, quantitative trading engine designed to automate cryptocurrency accumulation and profit-taking using edge computing. Originally developed for Raspberry Pi, this open-source fork is optimized for high-performance execution in any local Windows, Linux, or WSL environment.
 
+This is not a "set and forget money printer." I learned the hard way that algorithmic trading amplifies your own technical analysis rather than replacing it. The bot performs well when the market trends upward, but takes a lot of babysitting and strategy-tweaking when the market goes down. Treat it as a tool, not an oracle.
+
+🔴 Live Demo: See CryptoPi running in real-time at [cryptopi.live](https://cryptopi.live)
+Guest PIN: `2214` (read-only - no bot control)
+
 Why I Open Sourced This Project
 I decided to make CryptoPi public for three main reasons:
 Giving Back: I have always deeply appreciated the open-source developers who share their tools and knowledge, and I wanted to finally put something of my own out into the community.
-Passing the Baton: I have pushed this engine to my current technical limit. While the foundation is highly robust, there is plenty of room for expansion—like building an automatic strategy profile switcher based on live market indicators (hint, hint, to any developers looking to contribute).
+Passing the Baton: I have pushed this engine to my current technical limit. While the foundation is highly robust, there is plenty of room for expansion. Like building an automatic strategy profile switcher based on live market indicators (hint, hint, to any one looking to contribute).
 New Horizons: I have some other projects I am incredibly excited to spend my free time on. By open-sourcing this, the bot can continue to evolve and improve through community pull requests while I step back from active feature development.
 Testing the AI Waters: I wanted to test the capabilities of AI as a co-pilot to aid in development, and use it as a tool to learn more about UX design in JavaScript and network architecture in Python.
 
@@ -32,14 +37,13 @@ git clone https://github.com/Lecheric/cryptopi.git
 cd cryptopi
 2. Run the Setup Script
 Windows:
-
 setup.bat
-Linux / WSL / Mac:
 
+Linux / WSL / Mac:
 chmod +x setup.sh
 ./setup.sh
-The setup script will automatically:
 
+The setup script will automatically:
 Create a Python virtual environment (.venv)
 Install all dependencies from requirements.txt
 Prompt you to set an Admin username and password for the dashboard
@@ -49,24 +53,24 @@ Walk you through adding your Coinbase API keys
 During setup you will be prompted to place your coinbase_keys.json file in the project root. This file is downloaded directly from Coinbase when you create an API key.
 
 The file should look like this:
-
 {
   "name": "organizations/xxxxx/apiKeys/xxxxx",
   "privateKey": "-----BEGIN EC PRIVATE KEY-----\nYOUR_KEY_HERE\n-----END EC PRIVATE KEY-----\n"
 }
+
 ⚠️ For initial testing, create a key with READ-ONLY permissions. Do not enable Trade or Withdraw permissions until you are ready to risk real capital.
 
+"Why does this bot need my API keys?": This is a fair and healthy question. The bot requires authenticated Coinbase API access to fetch real-time market data (prices, candles, volume) and to execute trades when Live Mode is enabled. Your keys are stored locally in coinbase_keys.json and .env both are git-ignored and never leave your machine. They are never transmitted to any external server, cloud service, or third party. The entire codebase is open source specifically so you can verify this yourself. If you don't trust it, read trading_bot.py and app.py before adding your keys.
+
 4. Start the Bot
+
 Windows:
-
 start.bat
-Linux / WSL / Mac:
 
+Linux / WSL / Mac:
 ./start.sh
 Then open your browser to the URL printed in the terminal (e.g., **http://YOUR_LOCAL_IP:5000**) and log in with the credentials you set during setup.
 
-🔴 Live Demo: See CryptoPi running in real-time at https://cryptopi.live
-Guest PIN: `2214` (read-only — no trades can be executed)
 
 File Reference
 cryptopi/
@@ -86,7 +90,7 @@ cryptopi/
 ├── start.sh                  # Linux/Mac start script
 ├── requirements.txt          # Python dependencies
 ├── LICENSE                   # MIT License
-├── templates/                # Jinja2 HTML templates
+├── templates/                # HTML templates
 │   ├── index.html            # Main dashboard
 │   ├── login.html            # Authentication page
 │   ├── portfolio.html        # Portfolio & PnL view
@@ -102,11 +106,24 @@ Local-Only Binding: The dashboard binds to 127.0.0.1, making it invisible to the
 The .env Protocol: API keys and credentials live in .env and coinbase_keys.json, both excluded from Git via .gitignore.
 Permission Scoping: Users are instructed to generate API keys with "Trade" permissions only. With "Withdrawal" disabled at the exchange level, the software cannot move funds off-exchange.
 Session Security: The Flask SECRET_KEY is pulled from .env — not randomized at runtime — so sessions survive reboots.
-Ghost Mode (Paper Trading)
-By default, CryptoPi runs in Ghost Mode — all trades are simulated against a $10,000 paper balance. No real orders are placed. To enable live trading, check the "Enable Live Trading" toggle in the dashboard config panel while the bot is stopped, then restart.
 
+By default, CryptoPi runs in Ghost Mode - all trades are simulated against a $10,000 paper balance. No real orders are placed.
+
+The "Enable Live Trading" toggle exists in the dashboard UI but does nothing. Live trading is force-disabled in the source code as a safety measure. The bot ran for several months in Ghost Mode for stability testing, but Live Mode was never extensively tested against real capital.
+
+If you want to enable live trading, you'll need to find the override in the source code and remove it yourself. You do this entirely at your own risk. The developers assume no liability for any trades executed in Live Mode.
 License
+
 This project is licensed under the MIT License.
 
-Disclaimer
-This software is provided strictly for educational and simulation purposes. It is NOT financial advice. Cryptocurrency trading involves substantial risk of loss. The creators assume no liability for financial losses, damages, or unintended trades. You are solely responsible for your own capital and trading decisions.
+Disclaimer:
+This software is provided strictly for educational, evaluation, and simulation purposes. Nothing in this repository constitutes financial advice, investment guidance, or a recommendation to buy or sell any asset.
+Cryptocurrency trading involves substantial risk of loss, including the possibility of losing your entire investment. Markets are volatile, unpredictable, and operate 24/7. Automated trading software introduces additional risks including but not limited to: software bugs, API failures, exchange outages, network interruptions, incorrect order execution, stale data, and unexpected behavior during extreme market conditions.
+This software is provided AS IS without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement. The authors and contributors make no guarantees about the accuracy, reliability, completeness, or timeliness of the software or any trading signals it generates.
+By downloading, installing, or running this software, you acknowledge and agree that:
+- You are solely responsible for your own capital and trading decisions.
+- The creators, contributors, and maintainers assume no liability for financial losses, missed opportunities, damages, or unintended trades resulting from the use or misuse of this software.
+- Past performance in Ghost Mode (paper trading) is not indicative of future results and does not guarantee profitability with real capital.
+- You have read and understood the source code, or accept the risk of running code you have not fully reviewed.
+- You will not hold any contributor liable for losses resulting from bugs, market volatility, API changes, exchange policy changes, or any other cause.
+If you are not comfortable with these terms, do not use this software.

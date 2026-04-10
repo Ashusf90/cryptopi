@@ -50,6 +50,36 @@
 
     <div class="version-card">
     <h2 class="aux-header-2">
+        Version 4.1 (Apr 10, 2026) - Maintenance & Stability Patch 🛠️
+    </h2>
+    <ul>
+        <li>
+            <strong>Data Management & Utilities 🗄️</strong>
+            <ul>
+                <li><strong>Archive Optimizer:</strong> Refactored <code>admin_utils.py</code> to prevent archiving bloated personal log files and wildcard configurations. It now strictly backs up core state files (<code>portfolio.json</code>, <code>trades.db</code>, <code>config.json</code>) before performing a soft reset.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Bug Fixes & UI Polish 🐛</strong>
+            <ul>
+                <li><strong>Reset Modal Fix:</strong> Resolved a JavaScript <code>TypeError</code> caused by an HTML ID mismatch that prevented the Reset modal from opening. Added strict DOM null-checking for safe element manipulation.</li>
+                <li><strong>Dynamic Reset Protection:</strong> The "Reset Bot Data" button now automatically disables and visually locks itself via the <code>updateDashboard()</code> loop whenever the bot engine is actively running, preventing accidental database corruption.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Documentation 📝</strong>
+            <ul>
+                <li><strong>Developer Transparency:</strong> Added a candid "Note From the Developer" section to the README addressing realistic expectations for algorithmic trading.</li>
+                <li><strong>API Key Trust Statement:</strong> Expanded the API key section to explain why keys are needed, where they live, and why the project is open source - so users can verify for themselves.</li>
+                <li><strong>Ghost Mode Clarity:</strong> Documented that Live Trading is force-disabled in the source code and was never tested against real capital.</li>
+                <li><strong>Expanded Disclaimer:</strong> Rewrote the liability section with comprehensive risk language covering software bugs, API failures, exchange outages, and explicit user acknowledgment terms.</li>
+            </ul>
+        </li>
+    </ul>
+    </div>
+
+    <div class="version-card">
+    <h2 class="aux-header-2">
         Version 4.0 (Apr 2026) - Open Source Release 🌐
     </h2>
     <ul>

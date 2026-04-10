@@ -66,14 +66,15 @@ def create_archive(tag="manual"):
         print("⚠️  Warning: No files were found to archive.")
         return True # Return true anyway so reset can proceed
 
-def soft_reset(starting_capital=10000.0):
+def soft_reset(starting_capital=10000.0, skip_archive=False):
     """
     Resets the money and trade history, but KEEPS your strategy/config.
     """
     print(f"--- INITIATING SOFT RESET (Capital: ${starting_capital}) ---")
     
     # 0. SAFETY ARCHIVE
-    create_archive(tag="pre_soft_reset")
+    if not skip_archive:
+        create_archive(tag="pre_soft_reset")
 
     # 1. Reset Portfolio
     try:
@@ -88,15 +89,11 @@ def soft_reset(starting_capital=10000.0):
     except Exception as e:
         print(f"❌ Failed to reset portfolio: {e}")
 
-    # 2. Clear Database
+    # 2. Clear Database (Delete file for true auto-increment reset)
     try:
         if os.path.exists(DB_FILE):
-            conn = sqlite3.connect(DB_FILE)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM trades") 
-            conn.commit()
-            conn.close()
-            print("✅ Trade Database cleared.")
+            os.remove(DB_FILE)
+            print("✅ Trade Database deleted (will be recreated on boot).")
     except Exception as e:
         print(f"❌ Failed to clear database: {e}")
 
@@ -118,12 +115,11 @@ def hard_reset():
     """
     print("--- INITIATING HARD RESET ---")
     
-    # 0. SAFETY ARCHIVE (Done inside soft_reset, but let's tag specifically for Hard)
+    # 0. SAFETY ARCHIVE 
     create_archive(tag="pre_hard_reset")
 
-    # 1. Run Soft Reset logic manually (skipping the archive call inside it to avoid duplicates)
-    # Actually, calling soft_reset() is cleaner, it will just make a second backup which is safer.
-    soft_reset() 
+    # 1. Run Soft Reset logic manually, skipping the redundant archive
+    soft_reset(skip_archive=True) 
     
     # 2. Restore Default Config
     print("⚠ Overwriting config.json with factory defaults...")
