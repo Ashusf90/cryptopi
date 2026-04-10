@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Portfolio Analysis</title>
+    <link rel="stylesheet" href="../static/style.css">
+    <script>
+    const saved = localStorage.getItem('app_theme');
+    if (saved && saved !== 'default') {
+        document.documentElement.setAttribute('data-theme', saved);
+    }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+</head>
+<body class="aux-body">
+    <h1>Portfolio Analysis</h1>
+    
+    <div id="loading-message">
+        <p>Loading analysis data... This may take a moment.</p>
+    </div>
+
+    <div id="analysis-content" style="display: none;">
+        
+        <h2>Performance Summary</h2>
+        <div class="summary-grid">
+            <div class="summary-box">
+                <div class="label">Total Portfolio Value</div>
+                <div class="value" id="val-total-value">$0.00</div>
+            </div>
+            <div class="summary-box">
+                <div class="label">Total P&L</div>
+                <div class="value" id="val-total-pnl">$0.00</div>
+            </div>
+            <div class="summary-box">
+                <div class="label">Realized P&L</div>
+                <div class="value" id="val-realized-pnl">$0.00</div>
+            </div>
+            <div class="summary-box">
+                <div class="label">Strategy vs. Benchmark</div>
+                <table class="data-table" class="benchmark-table">
+                    <tr>
+                        <td>Bot Performance</td>
+                        <td id="bench-bot-pnl">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td>BTC Buy & Hold</td>
+                        <td id="bench-btc-pnl">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td>ETH Buy & Hold</td>
+                        <td id="bench-eth-pnl">$0.00</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <h2>Risk & Efficiency Metrics</h2>
+        <div class="summary-grid">
+            <div class="summary-box">
+                <div class="label">Win Rate</div>
+                <div class="value" id="met-win-rate">0%</div>
+            </div>
+            <div class="summary-box">
+                <div class="label">Profit Factor</div>
+                <div class="value" id="met-profit-factor">0.00</div>
+            </div>
+            <div class="summary-box">
+                <div class="label">Max Drawdown</div>
+                <div class="value" id="met-max-drawdown" style="color: #E74C3C;">0.00%</div>
+            </div>
+            <div class="summary-box">
+                <div class="label">Trade Count</div>
+                <div class="value" id="met-total-trades">0</div>
+            </div>
+            <div class="summary-box">
+                <div class="label">Avg Win / Loss</div>
+                <div class="value" style="font-size: 1.1em;">
+                    <span id="met-avg-win" class="positive">+$0</span> / 
+                    <span id="met-avg-loss" class="negative">-$0</span>
+                </div>
+            </div>
+        </div>
+
+        <h2>Equity Curve</h2>
+        <div class="content">
+            <canvas id="pnl-chart" width="400" height="150"></canvas>
+        </div>
+
+        <h2>Trade History</h2>
+        <div class="content">
+            <tbody id="trade-history-body"></tbody> 
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Symbol</th>
+                        <th>Action</th>
+                        <th>Price</th>
+                        <th>Score</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="trade-history-rows">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="logic-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title" class="modal-title">Trade Logic Snapshot</h3>
+                <span onclick="document.getElementById('logic-modal').style.display='none'" class="close-btn">&times;</span>
+            </div>
+            <div id="logic-content" class="analysis-log-container"></div>
+        </div>
+    </div>
+
+    <script>
+        window.tradeLogStore = [];
+
+        function formatDollar(num) {
+            const value = num || 0; 
+            const sign = value >= 0 ? '+' : '-';
+            const colorClass = value >= 0 ? 'positive' : 'negative';
+            return `<span class="${colorClass}">${sign}$${Math.abs(value).toFixed(2)}</span>`;
+        }
+
+        function formatPrice(price) { return parseFloat(price).toFixed(price >= 1 ? 2 : 4); }
+        function formatLargeNumber(num) { return parseFloat(num).toLocaleString('en-US', {maximumFractionDigits:0}); }
+
+        // [NEW] Ported "Terminal Log" Generator
+        function generateTerminalLog(symbol, data) {
+            if (!data) return "No Data Available";
+
+            // 1. Data Setup (Handle potential missing fields from historical data)
+            const info = data; 
+            const details = data.details || data; // Fallback if flattened
+            const global = data.global || {};
+            
+            // --- Helper for Terminal Colors ---
+            const color = (text, type) => {
+                let c = '#ccc'; // Default gray
+                if (type === 'green') c = '#2ECC71';
+                if (type === 'red') c = '#E74C3C';
+                if (type === 'yellow') c = '#F1C40F';
+                if (type === 'blue') c = '#3498DB';
+                return `<span style="color: ${c}; font-weight: bold;">${text}</span>`;
+            };
+
+            const strat = info.strategy || "Unknown"; 
+            const price = parseFloat(info.price || 0);
+            const chg5m = parseFloat(info.change_5m || 0);
+            const chg24h = parseFloat(info.change_24h || 0);
+            
+            // Hybrid Regime + SMA Logic
+            const globalReg = (global.market_regime || "N/A").toUpperCase();
+            const localReg = (info.local_regime || globalReg).toUpperCase();
+            const localSma = parseFloat(info.local_sma || 0);
+            
+            let regimeStr = globalReg;
+            if (globalReg !== localReg) {
+                regimeStr += ` (Local: ${localReg} @ $${formatPrice(localSma)})`;
+            } else {
+                regimeStr += ` (50d: $${formatPrice(localSma)})`;
+            }
+            
+            // 2. Header & Context
+            let logHtml = `[Historical Snapshot] Analyzing ${symbol}\n`;
+            logHtml += ` -> Execution Price: $${formatPrice(price)} (5m: ${chg5m.toFixed(2)}% / 24h: ${chg24h.toFixed(2)}%)\n`;
+            logHtml += ` -> Market Regime:   ${regimeStr}\n`;
+
+            // ADX Logic
+            const adxVal = details.adx !== undefined ? parseFloat(details.adx) : 0;
+            const adxThresh = 25; // Default static config since we don't have live config here
+            const adxColor = adxVal > adxThresh ? 'green' : 'red';
+            const adxDisplay = details.adx !== undefined ? color(adxVal.toFixed(2), adxColor) : "N/A";
+
+            logHtml += ` -> Active Strategy: ${color(strat, 'blue')} (ADX: ${adxDisplay})\n`;
+
+            // 3. Filters
+            // Volume
+            const volVal = parseFloat(details.latest_vol || 0);
+            const tgtVal = parseFloat(details.target_vol || 0);
+            
+            // Reconstruct vol check logic if string missing
+            let volCheck = details.vol_check;
+            if(!volCheck) volCheck = (volVal > tgtVal) ? "PASSED" : "FAILED";
+            
+            const volPass = volCheck === "PASSED";
+            const volSign = volPass ? ">" : "<=";
+            const volColor = volPass ? 'green' : 'red';
+            logHtml += ` -> Volume Check:    ${color(volCheck, volColor)} (${formatLargeNumber(volVal)} ${volSign} Tgt: ${formatLargeNumber(tgtVal)})\n`;
+
+            // MA Filter
+            const maVal = parseFloat(info.ma_value || 0);
+            if (maVal > 0) {
+                const maPass = price > maVal;
+                const maSign = maPass ? ">" : "<";
+                const maRes = maPass ? "PASSED" : "BLOCKED";
+                const maColor = maPass ? 'green' : 'red';
+                logHtml += ` -> MA Filter:       ${color(maRes, maColor)} (Price $${formatPrice(price)} ${maSign} MA $${formatPrice(maVal)})\n`;
+            }
+
+            // RSI
+            const rsi = parseFloat(info.rsi || 0);
+            logHtml += ` -> RSI (1h):        ${rsi.toFixed(2)}\n`;
+
+            // 4. Risk Management
+            if (details.atr_stop) {
+                logHtml += ` -> ATR Stop Target: < $${formatPrice(details.atr_stop)}\n`;
+                logHtml += ` -> ATR Take-Profit: > $${formatPrice(details.atr_tp)}\n`;
+            } else if (details.fixed_stop) {
+                logHtml += ` -> Fixed Stop:      < $${formatPrice(details.fixed_stop)}\n`;
+                logHtml += ` -> Fixed TP:        > $${formatPrice(details.fixed_tp)}\n`;
+            }
+
+            // 5. Scoring
+            const buyThresh = global.buy_thresh || 0;
+            const sellThresh = global.sell_thresh || 0;
+            logHtml += ` -> Thresholds:      BUY > ${buyThresh.toFixed(2)} | SELL < ${sellThresh.toFixed(2)}\n`;
+
+            const totalScore = parseFloat(info.score || 0);
+            const macdScore = parseFloat(details.macd_score || 0);
+            const mtfaScore = totalScore - macdScore;
+            const scoreColor = totalScore > 0 ? 'green' : 'red';
+
+            if (Math.abs(totalScore - 999) < 1) {
+                logHtml += ` -> Score:           999 (Forced Dip Buy)\n`;
+            } else {
+                logHtml += ` -> Score Calc:      MTFA(${mtfaScore.toFixed(2)}) + MACD(${macdScore.toFixed(2)}) = ${color(totalScore.toFixed(3), scoreColor)}\n`;
+            }
+
+            // 6. Action
+            const status = info.action || info.status || "Idle"; // Use 'action' from DB column if status missing
+            let statusColor = 'gray';
+            if (status.includes("BUY") || status.includes("TAKE")) statusColor = 'green';
+            else if (status.includes("SELL") || status.includes("STOP")) statusColor = 'red';
+            else if (status.includes("Blocked") || status.includes("Error")) statusColor = 'yellow';
+            
+            logHtml += ` -> ACTION:          ${color(status.toUpperCase(), statusColor)}`;
+
+            return logHtml;
+        }
+
+        function showLogicModal(index) {
+            const record = window.tradeLogStore[index];
+            if(!record) return;
+            
+            // Generate the HTML using the ported logic
+            const logHtml = generateTerminalLog(record.symbol, record.data);
+            
+            document.getElementById('modal-title').textContent = `${record.symbol} Log @ ${record.timestamp}`;
+            document.getElementById('logic-content').innerHTML = logHtml;
+            document.getElementById('logic-modal').style.display = 'flex';
+        }
+        
+        window.onclick = function(event) { 
+            if (event.target == document.getElementById('logic-modal')) {
+                document.getElementById('logic-modal').style.display = "none"; 
+            }
+        }
+
+        async function runAnalysis() {
+            try {
+                // 1. Fetch JSON Analysis Data
+                const response = await fetch('/analysis_data');
+                const data = await response.json();
+                
+                // Update Basic P&L (Top Cards)
+                document.getElementById('val-total-value').textContent = `$${data.total_portfolio_value.toFixed(2)}`;
+                document.getElementById('val-total-pnl').innerHTML = formatDollar(data.total_pnl);
+                document.getElementById('val-realized-pnl').innerHTML = formatDollar(data.realized_pnl);
+
+                // Update Benchmarks
+                const bnh = data.buy_and_hold || {};
+                document.getElementById('bench-bot-pnl').innerHTML = formatDollar(data.total_pnl);
+                const btcVal = bnh['BTC/USD'] ? bnh['BTC/USD'].pnl : 0;
+                document.getElementById('bench-btc-pnl').innerHTML = formatDollar(btcVal);
+                const ethVal = bnh['ETH/USD'] ? bnh['ETH/USD'].pnl : 0;
+                document.getElementById('bench-eth-pnl').innerHTML = formatDollar(ethVal);
+
+                // Update Metrics
+                const m = data.metrics || {};
+                const wr = m.win_rate || 0;
+                const wrColor = wr > 50 ? '#2ECC71' : (wr < 40 ? '#E74C3C' : '#F1C40F');
+                document.getElementById('met-win-rate').innerHTML = `<span style="color:${wrColor}">${wr.toFixed(1)}%</span>`;
+
+                const pf = m.profit_factor || 0;
+                const pfColor = pf > 1.5 ? '#2ECC71' : (pf < 1.0 ? '#E74C3C' : '#F1C40F');
+                document.getElementById('met-profit-factor').innerHTML = `<span style="color:${pfColor}">${pf.toFixed(2)}</span>`;
+
+                document.getElementById('met-total-trades').textContent = m.total_trades || 0;
+                document.getElementById('met-avg-win').textContent = `+$${(m.avg_win || 0).toFixed(2)}`;
+                document.getElementById('met-avg-loss').textContent = `-$${Math.abs(m.avg_loss || 0).toFixed(2)}`;
+
+                // 2. Fetch & Parse CSV for Chart (THE FIX)
+                const csvResponse = await fetch('/pnl_history_csv'); // Ensure you have a route for this, or use raw file path if static
+                // If you don't have a specific route, usually 'pnl_history.csv' works if served statically
+                // Let's assume the backend serves it or we use the raw file read from previous logic
+                
+                // For safety, let's try to fetch the file directly. 
+                // If your app.py doesn't serve static CSVs, we might need to add a route.
+                // Assuming /api/pnl_history exists or similar. 
+                // If not, we can try to use the data passed in 'data.equity_curve' if available.
+                
+                // Let's rely on a robust fetch:
+                const historyRes = await fetch('pnl_history.csv');
+                const historyText = await historyRes.text();
+                
+                const lines = historyText.trim().split('\n');
+                lines.shift(); // Remove header
+
+                const labels = [];
+                const dataPoints = [];
+                let maxEquity = 0;
+                let maxDrawdown = 0;
+
+                lines.forEach(line => {
+                    const parts = line.split(',');
+                    if (parts.length >= 2) {
+                        const timestamp = parts[0].trim();
+                        const value = parseFloat(parts[1].trim());
+
+                        if (!isNaN(value)) {
+                            labels.push(timestamp);
+                            dataPoints.push(value);
+
+                            // Calculate Drawdown locally
+                            if (value > maxEquity) maxEquity = value;
+                            const currentDrawdown = ((maxEquity - value) / maxEquity) * 100;
+                            if (currentDrawdown > maxDrawdown) maxDrawdown = currentDrawdown;
+                        }
+                    }
+                });
+
+                // Update Drawdown Display
+                const ddDisplay = maxDrawdown > 0 ? `-${maxDrawdown.toFixed(2)}%` : "0.00%";
+                const ddElem = document.getElementById('met-max-drawdown');
+                if(ddElem) ddElem.textContent = ddDisplay;
+
+                // 3. Draw Chart
+                const ctx = document.getElementById('pnl-chart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Portfolio Value ($)',
+                            data: dataPoints,
+                            borderColor: '#3498DB',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index' },
+                        scales: {
+                            x: { display: false },
+                            y: { grid: { color: '#333' }, ticks: { color: '#ccc' } }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // 4. Trade Table
+                const tbody = document.getElementById('trade-history-rows');
+                tbody.innerHTML = '';
+                window.tradeLogStore = []; 
+
+                if (data.recent_trades) {
+                    data.recent_trades.forEach((trade, idx) => {
+                        let logicData = {};
+                        try { logicData = JSON.parse(trade.logic_metadata); } catch (e) { logicData = {}; }
+                        
+                        window.tradeLogStore.push({
+                            symbol: trade.symbol,
+                            timestamp: trade.timestamp,
+                            data: logicData
+                        }); 
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${trade.timestamp}</td>
+                            <td>${trade.symbol}</td>
+                            <td class="${trade.action==='BUY'?'positive':'negative'}">${trade.action}</td>
+                            <td>$${formatPrice(trade.price)}</td>
+                            <td>${trade.score}</td>
+                            <td><button onclick="showLogicModal(${idx})" style="background:#444;color:#fff;border:none;padding:2px 6px;cursor:pointer;">Logic</button></td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+
+                document.getElementById('loading-message').style.display = 'none';
+                document.getElementById('analysis-content').style.display = 'block';
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('loading-message').textContent = "Error loading data.";
+            }
+        }
+        runAnalysis();
+    </script>
+</body>
+</html>

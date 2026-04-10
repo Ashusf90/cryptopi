@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog</title>
+    <link rel="stylesheet" href="../static/style.css">
+    <style>
+        /* Only apply these rules on screens smaller than 768px (Tablets & Phones) */
+        @media (max-width: 768px) {
+            
+            /* 1. Boost Base Text Size */
+            body.aux-body, p, li, div {
+                font-size: 18px !important; /* Standard is usually 14-16px */
+                line-height: 1.6 !important; /* More breathing room between lines */
+            }
+
+            /* 2. Make Headings Stand Out */
+            h1 { font-size: 28px !important; margin-bottom: 20px !important; }
+            h2 { font-size: 24px !important; margin-top: 30px !important; }
+            h3 { font-size: 20px !important; color: var(--accent-primary); }
+
+            /* 3. Fix Code Blocks (Prevent tiny text) */
+            code, .highlight-box {
+                font-size: 14px !important; /* Readable but distinct from body text */
+            }
+
+            /* 4. Make "Details" Toggles Easier to Tap */
+            summary {
+                font-size: 19px !important;
+                padding: 15px 0 !important; /* Bigger tap target for fingers */
+            }
+
+            /* 5. Add side padding so text doesn't hit the screen edge */
+            body.aux-body {
+                padding: 20px !important;
+                max-width: 100% !important;
+            }
+        }
+    </style>
+    <script>
+    const saved = localStorage.getItem('app_theme');
+    if (saved && saved !== 'default') {
+        document.documentElement.setAttribute('data-theme', saved);
+    }
+    </script>
+</head>
+<body class="aux-body">
+    <h1 class="aux-header-1">🚀 Bot Changelog</h1>
+
+    <div class="version-card">
+    <h2 class="aux-header-2">
+        Version 4.0 (Apr 2026) - Open Source Release 🌐
+    </h2>
+    <ul>
+        <li>
+            <strong>Repository Cleanup & Audit 📦</strong>
+            <ul>
+                <li><strong>Dead Code Purge:</strong> Removed 12+ orphaned files not part of the live application — backtester scripts, data utilities, debug scripts, the redundant <code>archive.py</code> (logic already in <code>admin_utils.py</code>), orphaned <code>console.css</code>, and standalone <code>run_bot.py</code>.</li>
+                <li><strong>Data Scrubbing:</strong> Removed all personal trading data (<code>data/history_logs/*.csv</code>, <code>pnl_history.csv</code>, <code>portfolio.json</code>) and live credentials from the repository.</li>
+                <li><strong>.gitignore Hardening:</strong> Added <code>bot.log</code>, <code>pnl_history.csv</code>, <code>portfolio.json</code>, <code>config.json</code>, <code>coinbase_keys.json</code>, <code>.env</code>, <code>data/history_logs/</code>, and <code>archives/</code> to prevent runtime artifacts from being committed.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Liability & Risk Mitigation ⚖️</strong>
+            <ul>
+                <li><strong>Frontend Disclaimer Modal:</strong> Added a blocking overlay on every page load. Users must click "I Understand &amp; Accept the Risk" before accessing the dashboard. No <code>localStorage</code> persistence — the gate fires every session.</li>
+                <li><strong>MIT License:</strong> Included a standard MIT License (<code>LICENSE.txt</code>) covering the open-source release.</li>
+                <li><strong>GitHub &amp; Developer Links:</strong> Added a footer to the disclaimer modal linking to the public repository for bug reports, feature requests, and contributions.</li>
+                <li><strong>Crypto Tip Jar:</strong> Built a collapsible donation widget with click-to-select wallet addresses for BTC (Bitcoin Network) and ETH (Ethereum Network).</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Bug Fixes & Polish 🐛</strong>
+            <ul>
+                <li><strong>Terminal Color Fix:</strong> The log sidebar was receiving pre-stripped plain text because <code>log_terminal()</code> called <code>strip_ansi()</code> before sending to the queue. Fixed by passing the ANSI-colored string directly to <code>log_analysis()</code>, allowing the Flask <code>ansi_to_html()</code> converter to render colors in the browser.</li>
+                <li><strong>Disclaimer Readability:</strong> Removed italic styling from the event log disclaimer and increased <code>line-height</code> to 1.8 for better legibility.</li>
+                <li><strong>Resizable Log Sidebar:</strong> Added a drag handle to the terminal drawer allowing users to resize it horizontally. Clamped between 300px and 80% of viewport width using a live CSS variable update.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Documentation 📝</strong>
+            <ul>
+                <li><strong>README.md:</strong> Wrote a comprehensive project overview covering the quant strategy summary, technical architecture, full installation walkthrough for Windows/Linux/WSL, file reference tree, security model, and Ghost Mode documentation.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+    
+    <div class="version-card">
+    <h2 class="aux-header-2">
+        Version 3.3.1 (Feb 7, 2026) - Stealth & Stability Patch
+    </h2>
+    <ul>
+        <li>
+            <strong>OpSec & Information Hygiene 🤐</strong>
+            <ul>
+                <li>
+                    <strong>Terminal Redaction:</strong> Sanitized the startup logs 
+                    <span style="background-color: #000; color: #bb2323; padding: 0 4px; border-radius: 3px;" title="Redacted">[redacted.py & redacted.py]</span> 
+                    to prevent leaking the device's specific hostname 
+                    <span style="background-color: #000; color: #bb2323; padding: 0 4px; border-radius: 3px;" title="Redacted">[redacted]</span> 
+                    or internal Port 
+                    <span style="background-color: #000; color: #bb2323; padding: 0 4px; border-radius: 3px;" title="Redacted">[redacted]</span> 
+                    during the boot sequence. The terminal now reports a generic "Service Ready" status to protect network anonymity in screenshots.
+                </li>
+                <li><strong>Log Level Tuning:</strong> Configured <code>werkzeug</code> logging to suppress non-critical startup spam while maintaining error visibility, ensuring a cleaner and more secure console output.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Bug Fixes 🐞</strong>
+            <ul>
+                <li><strong>Guest Mode Crash Fix:</strong> Patched a critical JavaScript error where the "Strategy Profile Selector" attempted to load in Guest Mode (where the element does not exist). Added a robust <code>if (!selector) return;</code> safety check to prevent the dashboard script from aborting, ensuring full functionality for read-only users.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+    <div class="version-card">
+    <h2 class="aux-header-2">
+        Version 3.3 (Feb 4, 2026) - Security Hardening 🔐
+    </h2>
+    <ul>
+        <li>
+            <strong>Security & Access Control 🛡️</strong>
+            <ul>
+                <li><strong>Guest PIN System:</strong> Replaced the open "Global Guest" access with a secure PIN requirement. Access now requires a specific Guest Code defined in the backend.</li>
+                <li><strong>Role-Based API Lockdown:</strong> Implemented strict "Gatekeeper" checks on the server side <code>(@app.routes)</code>. Even if a user bypasses the UI controls, the API now rejects critical commands (Start, Stop, Reset, Config) from non-admin sessions.</li>
+                <li><strong>True Read-Only Mode:</strong> Guest sessions are now visually and functionally locked. Control buttons are disabled, inputs are frozen, and the "Reset Bot" logic is physically detached from the DOM for guest users.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>UI/UX Improvements ✨</strong>
+            <ul>
+                <li><strong>Login Interface Redesign:</strong> Split the login screen into two distinct forms (Admin vs. Guest) with clear visual separators to prevent credential confusion.</li>
+                <li><strong>Mobile Optimization:</strong> Added responsive Viewport meta tags and CSS overrides to <code>help.html</code> and <code>changelog.html</code>. Text and buttons now scale correctly on high-DPI mobile devices (e.g., Pixel 9XL).</li>
+                <li><strong>Documentation Update:</strong> Updated the <strong>Help & Glossary</strong> page to include the new <strong>Accumulator Mode</strong> in the Core Strategy section.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Code Cleanup 🧹</strong>
+            <ul>
+                <li><strong>Script Stabilization:</strong> Fixed a "Zombie Code" crash caused by duplicate `const getElementById` declarations in the main script, restoring reliability to the Control Panel loading sequence.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+    <div class="version-card" style="border: 1px solid #333;">
+        <h2 class="aux-header-2">
+            Version 3.2.3 (Jan 31, 2026) - 
+            <span style="background-image: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000); -webkit-background-clip: text; color: transparent; animation: hue-rotate 6s infinite linear;">
+                Gamer Mode RGB
+            </span> 🎮
+        </h2>
+        <ul>
+            <li>
+                <strong>New Theme: Gamer RGB 🕹️</strong>
+                <ul>
+                    <li><strong>System-Wide RGB:</strong> Added a high-contrast "Deep Black" theme with animated RGB borders for the Sidebar, Status Header, and Modals.</li>
+                    <li><strong>Smart Animation Logic:</strong> Implemented a hybrid rendering strategy:
+                        <ul>
+                            <li><em>Static Elements:</em> cycle through the full RGB spectrum (6s loop).</li>
+                            <li><em>High-Frequency Elements (Cards):</em> Render with a <strong style="color: #d600ff; text-shadow: 0 0 5px rgba(214, 0, 255, 0.6);">Static Neon Purple</strong> glow to prevent "strobe flashing" artifacts during the 1-second price update ticks.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <strong>Visual Polish ✨</strong>
+                <ul>
+                    <li><strong>Refined Gradients:</strong> Applied smooth color transitions to the Theme Selector to match the new aesthetic.</li>
+                    <li><strong>Accumulator Override:</strong> "Safety Blue" mode takes priority over RGB animations, ensuring that when safety rules are active, the visual feedback remains clear and distinct.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="version-card">
+    <h2 class="aux-header-2">Version 3.2.1 (Jan 31, 2026) - UX Polish & Advisor Modal 💎</h2>
+    <ul>
+        <li>
+            <strong>Advisor Modal & Interaction Upgrade 🧠</strong>
+            <ul>
+                <li><strong>New Management Interface:</strong> Relocated the "Force Sell" button from the card face into a dedicated <strong>Advisor Modal</strong>. This prevents accidental liquidations and provides a professional context for making sell decisions.</li>
+                <li><strong>Heat Badge Logic:</strong> The badge now functions as a visual portfolio map. It only "activates" (glows and shows color) for assets you currently <strong>Hold</strong>. Watchlist items remain dimmed to reduce visual noise.</li>
+                <li><strong>Gradient Refinement:</strong> Adjusted the Heat Gauge color transition to a logical temperature scale: 
+                    <strong style="background-image: linear-gradient(to right, #4a9eff, #d500f9, #ff3d00); -webkit-background-clip: text; color: transparent;">
+                        Blue (Cold/Buy) → Purple (Warm) → Red (Hot/Sell)
+                    </strong>, providing clearer momentum feedback.
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>Visual Polish & Layout Fixes 🎨</strong>
+            <ul>
+                <li><strong>Blue Theme Integration:</strong> Fixed the Accumulator Mode theme hook. The entire dashboard now correctly shifts to a distinct "Safety Blue" palette when the mode is active.</li>
+                <li><strong>Control Row Alignment:</strong> Implemented <code>margin-top: auto</code> on the symbol card controls to ensure buttons always align perfectly at the bottom, regardless of the card's text height.</li>
+                <li><strong>Context Cleanup:</strong> Removed redundant "Hold" status text from the card header to keep the interface clean.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>More Boring Legal & Safety Stuff 💤</strong>
+            <ul>
+                <li><strong>Non-Custodial Warning:</strong> Updated the main disclaimer to include specific language regarding API key security and the non-custodial nature of the software, clarifying liability for third-party security breaches.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+    <div class="version-card">
+    <h2 class="aux-header-2">Version 3.2 (Jan 30, 2026) - Accumulator Mode & Manual Kill Switch 🛡️💣</h2>
+    <ul>
+        <li>
+            <strong>Accumulator Mode (Completed) 🛡️</strong>
+            <ul>
+                <li><strong>Brain Transplant:</strong> Complete overhaul of <code>check_price_and_decide</code>. Implemented the "Safety Lock" logic: when Accumulator Mode is active, the bot continues to execute BUY signals but strictly blocks all automatic SELL signals.</li>
+                <li><strong>Advisor Score - Heat Guage 🔥:</strong> Updated backend to calculate and expose a "Heat/Conviction Score" (0-100) to the frontend during every cycle, even when auto-selling is disabled.
+                    <ul>
+                        <li><strong>How it Works:</strong> Aggregates Multi-Timeframe Analysis (MTFA) and MACD Momentum into a single "Heat" metric. (0 = Cold/Safe to Buy, 100 = Overheated/Consider Selling).</li>
+                        <li><strong>Purpose:</strong> Serves as an objective "Advisor" to help you time your exits manually. It provides data-driven context to counter emotional trading, letting you know when the algorithm <em>would</em> sell if it could.</li>
+                        <li><strong>Philosophy:</strong> In Accumulator Mode, this score is strictly for guidance. The bot will <strong>never</strong> pull the trigger for you—allowing true "Diamond Hands" holding while keeping you informed of market saturation.</li>
+                    </ul>
+                </li>
+                <li><strong>Visual Feedback (Blue Mode):</strong> Implemented a global CSS theme shift. The entire dashboard now tints "Safety Blue" when Accumulator Mode is active to provide instant visual confirmation of the strategy state.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Manual Control Systems 🕹️</strong>
+            <ul>
+                <li><strong>Force Sell Button:</strong> Added a "💣 SELL" button to the symbol cards.
+                    <ul>
+                        <li><strong>State Logic:</strong> Button renders Red/Active if the asset is held, and Grey/Disabled if not, preserving layout stability.</li>
+                        <li><strong>Backend Execution:</strong> Created a robust <code>force_sell_position</code> function that bypasses all strategy logic to market sell immediately.</li>
+                        <li><strong>Hybrid Integration:</strong> Logic automatically detects context: deletes local record in "Ghost Mode" vs. executes real API order in "Live Mode," while correctly logging the event to <code>trades.db</code>.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>Dashboard UI & Architecture 🧱</strong>
+            <ul>
+                <li><strong>Dynamic Status Header:</strong> Completely reworked the top status bar. It now clearly displays distinct states: 
+                    <span class="live-text mode-accumulator" style="display:inline; font-size:inherit; color:#4a9eff; animation: text-pulse-blue 2s infinite;">🛡️ Accumulator Active</span> (Blue), 
+                    <span class="live-text mode-running" style="display:inline; font-size:inherit; color:#2ecc71; animation: text-pulse-green 2s infinite;">✅ System Online</span> (Green), or 
+                    <span class="live-text mode-offline" style="display:inline; font-size:inherit; color:#888;">"System Offline"</span> (Grey), 
+                    with fixed dimensions to prevent layout shifting.
+                </li>
+                <li><strong>Heat Badge:</strong> Finalized the "Heat Score" component. It now dynamically adjusts color (Blue → Green → Red) based on the realtime conviction score calculation.</li>
+                <li><strong>Testing & Stability:</strong> 
+                    <ul>
+                        <li>Fixed a recursion traceback bug in the <code>log_terminal</code> queue.</li>
+                        <li>Created <code>inject_fake_position.py</code> to safely inject dummy assets (e.g., DOGE) to verify UI rendering and the Force Sell execution path without risking real capital.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+    <div class="version-card">
+    <h2 class="aux-header-2">Version 3.1.2 (Jan 29, 2026) - Accumulator Mode & UI Architecture 🧱</h2>
+    <ul>
+        <li>
+            <strong>Accumulator Mode (WIP) Backend Logic Only🛡️</strong>
+            <ul>
+                <li><strong>"Buy-Only" Logic Defined:</strong> Established the architecture for a "HODL / Buy-Only" toggle. When active, the bot is designed to block auto-sell orders and instead calculate a "Conviction Score" (1-100) based on MTFA indicators to assist with manual selling.</li>
+                <li><strong>Integration Plan:</strong> Scheduled the toggle switch for the Config Panel (near Live Trading) and defined visual feedback rules (Dashboard theme shift) to indicate when the mode is active.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Dashboard UI Refinements 📊</strong>
+            <ul>
+                <li><strong>Heat Badge Component:</strong> Implemented the initial visual component for the "Heat/Conviction Score."
+                    <ul>
+                        <li>Logic set for conditional visibility (Planed component will remain hidden unless Accumulator Mode is ON).</li>
+                        <li>Placed in the lower control deck to group it with other analytical tools.</li>
+                    </ul>
+                </li>
+                <li><strong>Control Deck Reorganization:</strong> Relocated the "View Trading Logic" button to the bottom row and drafted specific padding constraints for the "SELL" button to prevent accidental misclicks.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Known Issues 🐞</strong>
+            <ul>
+                <li><strong>Floating UI Artifacts:</strong> The new Heat Score indicator is currently floating over the symbol status text (requires CSS z-index/margin adjustment).</li>
+                <li><strong>Dummy Data:</strong> The Heat Badge currently reads <code>0</code> as the backend calculation logic has not yet been hooked up.</li>
+                <li><strong>WIP Status:</strong> Accumulator Mode is currently a visual placeholder; the toggle does not yet alter active trading behavior.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+    <div class="version-card">
+    <h2 class="aux-header-2">Version 3.1.1 (Jan 28, 2026) - UI/UX Polish & Legal Compliance ⚖️</h2>
+    <ul>
+        <li>
+            <strong>Login Experience Update 🔑</strong>
+            <ul>
+                <li><strong>Guest Mode Distinction:</strong> Redesigned the "Guest / Demo Mode" button on the login screen. It is now housed in a dedicated "Gunmetal" section with explanatory text to prevent users from mistaking it for a "Cancel" action.</li>
+                <li><strong>Visual Hierarchy:</strong> Established a clear separation between the authenticated Admin login and the read-only public access route.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Legal Boring Stuff 📜</strong>
+            <ul>
+                <li><strong>Expanded Legal Disclaimer:</strong> Updated the on-screen disclaimer to include standard "Limitation of Liability" and "Warranty Waiver" clauses appropriate for open-source trading software.</li>
+                <li><strong>Startup Sequence Refinement:</strong> Simplified the "How to Start" instructions by removing deprecated steps (keys check) and explicitly highlighting the "Live Trading" safety toggle.</li>
+                <li><strong>Code Sanitation:</strong> Removed all inline CSS from the Event Log for cleaner maintainability and sanitized HTML entities (<code>&amp;</code>) for proper rendering.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+    <div class="version-card">
+    <h2 class="aux-header-2">Version 3.1 (Jan 28, 2026) - Mobile Polish & Cloud Tunnel ☁️</h2>
+    <ul>
+        <li>
+            <strong>Mobile UI Overhaul 🎨</strong>
+            <ul>
+                <li><strong>Vertical Stacking Logic:</strong> Completely rewrote the Mobile CSS layer. The Config Panel and Dashboard now stack vertically on phone screens, eliminating the "squished row" layout that made forms unusable.</li>
+                <li><strong>Scroll Trap Fix:</strong> Unlocked container heights (`height: auto`) on mobile to enable a seamless "One Page" vertical scroll, fixing the issue where users were trapped inside the navigation sidebar.</li>
+                <li><strong>Visual Polish:</strong>
+                    <ul>
+                        <li><strong>Box Model Fix:</strong> Applied `box-sizing: border-box` to prevent global status cards from clipping off the right edge of the screen.</li>
+                        <li><strong>Smart Trigger:</strong> The sidebar trigger maintains the "Thin Strip" aesthetic on desktop but intelligently adapts to overlay the drawer at 95% width on mobile.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>Infrastructure & Security 🛡️</strong>
+            <ul>
+                <li><strong>Cloudflare Tunnel Migration:</strong> Successfully migrated the Terminal connection to a dedicated <code>cloudflared</code> service. The shell now routes securely through <code>shell-beta.cryptopi.net</code>, bypassing local firewall restrictions.</li>
+                <li><strong>Privacy Warning Fix:</strong> Patched the "Look for devices on your local network" browser alert. Found and removed a hardcoded <code>src="http//pi.local"</code> fallback and replaced it with a smart JavaScript check to determine the correct local domain dynamically.</li>
+                <li><strong>Ghost Sidebar Patch:</strong> Identified and removed duplicate <code>iframe</code> instances in the HTML that were causing a "double vision" overlay of the terminal logs on resize events.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="changelog-entry major-update">
+    
+    <div class="version-header">
+        <span class="version-tag v2">v3.0.0</span>
+        <span class="release-date">January 24, 2026</span>
+    </div>
+    
+    <h3 class="update-title">🏰 The "Fortress & Facelift" Update</h3>
+    <p class="update-summary">
+        A monumental milestone release. Version 3.0 introduces a military-grade security layer, a completely rewritten Theme Engine, and marks the project crossing the 10,000 lines-of-code threshold.
+    </p>
+
+    <div class="changes-list">
+        
+        <h4>🛡️ The Security Fortress</h4>
+        <ul>
+            <li>
+                <strong>Cloudflare Tunnel Integration:</strong>
+                <ul>
+                    <li><strong>Zero-Trust Architecture:</strong> Configured <code>~/.cloudflared/config.yml</code> on the Pi to route traffic securely via Cloudflare.</li>
+                    <li><strong>Domain Routing:</strong> Successfully pointed the bot to <code>cryptopi.net</code>, eliminating the need for open router ports.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Authentication & Access Control:</strong>
+                <ul>
+                    <li><strong>Custom Login Interface:</strong> Built <code>login.html</code> from scratch with a responsive, Cyberpunk-themed entry gate.</li>
+                    <li><strong>Session Management:</strong> Refactored <code>app.py</code> (cleaning up ~55 lines) to replace Basic Auth with secure Flask Sessions.</li>
+                    <li><strong>Role-Based Access (Jinja2):</strong> Implemented "Guest Mode." Critical controls (Config, Profile Switcher, Live Trading) are now physically removed from the HTML for guest users using server-side rendering logic.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h4>🎨 The UI/UX Facelift</h4>
+        <ul>
+            <li>
+                <strong>The Theme Engine (Light/Dark Mode):</strong>
+                <ul>
+                    <li><strong>CSS Variables:</strong> Replaced all hardcoded hex values with <code>var(--variable-name)</code>. </li>
+                    <li><strong>Soft Silver Mode:</strong> Tuned the Light Theme to <code>#e6e6e6</code> to reduce glare, while Dark Mode remains Deep Gray/Black.</li>
+                    <li><strong>Component Cleanup:</strong> Removed inline styles from Dropdowns, Blacklists, and Log Modal containers, allowing them to adapt dynamically to the active theme.</li>
+                    <li><strong>JavaScript Decoupling:</strong> Updated <code>openAnalysisModal()</code> to use CSS classes (<code>.log-green</code>) instead of injecting colors, keeping logic separate from style.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Visual Polish:</strong>
+                <ul>
+                    <li><strong>Interactive Elements:</strong> Buttons now feature professional hover/rollover states for better tactile feedback.</li>
+                    <li><strong>Symbol Card Typography:</strong> flipped the hierarchy—Coin Symbols are now dominant/large, while Status Text is smaller and fits on a single line.</li>
+                    <li><strong>Layout Optimization:</strong> Moved "Strategy Toggles" and "Extras" in the Config Panel to a more logical flow below Market Analysis.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h4>🏆 10k Milestone: Stats for Nerds</h4>
+        <div style="background-color: #111; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 0.85rem; color: #00ff00; border: 1px solid #333; margin-top: 10px;">
+            <p style="margin: 0 0 10px 0; color: #fff; border-bottom: 1px solid #555; padding-bottom: 5px;">@pi:~/projects/cryptopi $ python stats.py</p>
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; margin-bottom: 10px; color: #aaa;">
+                <span>TYPE</span><span>FILES</span><span>LINES</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr;">
+                <span>Python (Backend)</span><span>19</span><span>4,512</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr;">
+                <span>HTML (Frontend)</span><span>5</span><span>3,807</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr;">
+                <span>CSS (Styling)</span><span>5</span><span>1,519</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; margin-bottom: 5px; border-bottom: 1px dashed #444;">
+                <span>Config/Data</span><span>10</span><span>1,339</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; font-weight: bold; color: #fff;">
+                <span>TOTAL PROJECT</span><span>39</span><span>11,177</span>
+            </div>
+
+            <br>
+            <p style="margin: 0; color: #3498db;">> Uptime Analysis:</p>
+            <p style="margin: 0; color: #aaa;">  • 8 Months Operational</p>
+            <p style="margin: 0; color: #aaa;">  • Avg 5 days/week (Ghost Mode/Backtesting)</p>
+            <br>
+            <p style="margin: 0; color: #e74c3c;">> Bug Smasher Score! (v1.0 - v2.9): 60 Total</p>
+            <p style="margin: 0; color: #aaa;">  • Critical Logic: 24</p>
+            <p style="margin: 0; color: #aaa;">  • System Stability: 21</p>
+            <p style="margin: 0; color: #aaa;">  • UI/UX Fixes: 15</p>
+        </div>
+
+    </div>
+</div>    
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.9.6 (Jan 21, 2026) - Smart Port Logic Patch 🧠</h2>
+    <ul>
+        <li>
+            <strong>Infrastructure Finalization 🏗️</strong>
+            <ul>
+                <li><strong>Dynamic Port Switching:</strong> Patched <code>app.py</code> with environment-aware logic. The server now checks for the <code>.beta</code> marker at startup:
+                    <ul>
+                        <li><strong>Live Mode:</strong> Defaults strictly to <strong>Port <span style="background-color: #000; color: #bb2323; padding: 0 4px; border-radius: 3px;" title="Redacted">[redacted]</span> </strong>.</li>
+                        <li><strong>Beta Mode:</strong> Automatically shifts to <strong>Port <span style="background-color: #000; color: #bb2323; padding: 0 4px; border-radius: 3px;" title="Redacted">[redacted]</span> </strong> to prevent "Address In Use" conflicts.</li>
+                    </ul>
+                </li>
+                <li><strong>Session Isolation:</strong> Completed the separation of Tmux sessions. The Live bot now operates in <code>crypto</code> while the Beta bot operates in <code>crypto-beta</code>, allowing for independent <code>bot_stop</code> commands without cross-fire.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>System Stability 🛡️</strong>
+            <ul>
+                <li><strong>Zombie Process Prevention:</strong> Refined the shutdown logic to target specific session IDs, ensuring that stopping the Beta bot never accidentally kills the Live trading engine.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.9.5 (Jan 21, 2026) - The "Parallel Universe" Infrastructure</h2>
+    <ul>
+        <li>
+            <strong>Dev Environment Architecture 🏗️</strong>
+            <ul>
+                <li><strong>The "On-Device Beta" Solution:</strong> After extensive testing, established a dedicated <code>crypto-bot-beta</code> directory on the main Raspberry Pi. This allows simultaneous development of V3.0 features (Themes, Security) on <strong>Port <span style="background-color: #000; color: #bb2323; padding: 0 4px; border-radius: 3px;" title="Redacted">[redacted]</span> </strong> without risking the Live Bot's uptime on Port <span style="background-color: #000; color: #bb2323; padding: 0 4px; border-radius: 3px;" title="Redacted">[redacted]</span> .</li>
+                <li><strong>Marker File Logic:</strong> Implemented a smart <code>.beta</code> marker system. The codebase is now environment-aware:
+                    <ul>
+                        <li><strong>app.py:</strong> Automatically switches to Port <span style="background-color: #000; color: #bb2323; padding: 0 4px; border-radius: 3px;" title="Redacted">[redacted]</span>  and serves the Beta Terminal (Port <span style="background-color: #000; color: #bb2323; padding: 0 4px; border-radius: 3px;" title="Redacted">[redacted]</span> ) if the marker exists.</li>
+                        <li><strong>start.sh:</strong> Detects the marker to create a separate Tmux session (<code>crypto-beta</code>) and suppresses the Discord Notifier to prevent "Stream Crossing" alerts.</li>
+                    </ul>
+                </li>
+                <li><strong>Git Safety Rails:</strong> Configured <code>.gitignore</code> and local <code>config_dev.json</code> overrides to ensure the Beta environment stays in "Paper Mode" while keeping the main codebase clean for syncing.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Infrastructure Research (Failed Experiments) 🧪</strong>
+            <ul>
+                <li><strong>Windows Migration Attempt:</strong> Attempted to move development to a local Windows machine. Aborted due to OS-specific path conflicts and significant friction compiling the <code>TA-Lib</code> technical analysis library.</li>
+                <li><strong>Pi Zero Stress Test:</strong> Evaluated a Raspberry Pi Zero as a standalone beta server. Ruled out due to hardware constraints (RAM/CPU) causing unacceptable latency during compilation and data processing.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>V3.0 Preparation 🚀</strong>
+            <ul>
+                <li><strong>Roadmap Alignment:</strong> This infrastructure update completes <strong>Phase 0</strong> of the V3 plan. The "Parallel Universe" setup is now ready for the immediate implementation of the <strong>Cloudflare Tunnel</strong> and <strong>Web Security Layer</strong>.</li>
+            </ul>
+        </li>
+    </ul>
+</div>    
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.9.4 (Jan 20, 2026) - Stability & UI Polish</h2>
+    <ul>
+        <li>
+            <strong>Critical Bug Fixes 🐛</strong>
+            <ul>
+                <li><strong>"Ghost Variable" Crash:</strong> Fixed a runtime error in <code>check_price_and_decide</code> where the bot tried to access <code>df['macd_hist']</code> without defining the DataFrame. Added a localized data fetch to ensure MACD logic runs correctly during "Scaling In".</li>
+                <li><strong>Dead Code Removal:</strong> Cleaned up the decision logic by removing a duplicate <code>return None</code> block that was unreachable but causing confusion.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>UI/UX Refinements 🎨</strong>
+            <ul>
+                <li><strong>CSS Architecture Overhaul:</strong> Completed an extensive 2-day refactor of the entire stylesheet system. Consolidated scattered inline styles into a unified "Theme Engine," paving the way for the fully dynamic <strong>Theme Switcher</strong> arriving in v3.0.</li>
+                <li><strong>Changelog "Cards":</strong> Wrapped all version history entries in <code>.version-card</code> containers. This aligns the Changelog with the new theme engine, fixing text contrast issues and adding breathing room.</li>
+                <li><strong>Major Update Prep:</strong> Refined the <code>.major-update</code> CSS class (Gold Gradient) to better highlight milestone releases.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.9.3 (Jan 19, 2026) - "Crash Logic" Refinement</h2>
+    
+    <ul>
+        <li>
+            <strong>Logic Patch: Oversold Override 🛠️ </strong>
+            <ul>
+                <li><strong>New Logic Flow:</strong> Completely restructured the "Oversold Override" mechanism to prevent "falling knife" disasters. The new flow is: <code>EXTREME RSI? &rarr; Safety Check (Volume/Exposure) &rarr; BUY or BLOCK</code>.</li>
+                <li><strong>Safety Checks Added:</strong> The bot now enforces a <stronterg>Volume Confirmation</strong> and a strict <strong>10% Asset Exposure Cap</strong> before executing an override trade, even if RSI is critical.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Feature: Intelligent Scaling In (DCA) 📉</strong>
+            <ul>
+                <li><strong>Momentum Check:</strong> Added a MACD Histogram analysis to detect accelerating crashes. The bot will now <strong>WAIT</strong> to scale in if the crash momentum is still increasing, even if the price is cheaper.</li>
+                <li><strong>DCA Spacer:</strong> Enforced a minimum price drop (e.g., 2%) below the <em>last buy price</em> before adding to a position, preventing "clumped" orders at the same price level.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.9.2 (Jan 18, 2026) - Flash Crash Safety Patch</h2>
+    
+    <ul>
+        <li>
+            <strong>Critical Bug Fixes 🚨 </strong>
+            <ul>
+                <li><strong>"Phantom Position" Fix:</strong> Resolved a race condition where a "Soft Reset" failed to delete <code>trades.db</code> if the bot was running, causing the bot to "re-adopt" cleared positions upon restart.</li>
+                <li><strong>Reset Logic Overhaul:</strong> The Dashboard now <strong>disables the Reset Button</strong> while the bot is active. This forces a clean shutdown before file deletion, preventing database corruption and file lock errors.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Crash Defense Validation 🛡️ </strong>
+            <ul>
+                <li><strong>Stop-Loss Execution:</strong> Validated "Panic Sell" logic during the -10% Flash Crash. The bot correctly identified the massive drop upon wake-up and liquidated assets immediately to preserve capital.</li>
+                <li><strong>Warm-Up Protocols:</strong> Reinforced the importance of <code>warmup_cycles</code>. The bot now relies on this buffer to allow indicators (RSI/ADX) to stabilize after a volatility spike before re-entering the market.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.9.1 (Jan 18, 2026) - Data Safety & Logging Patch</h2>
+
+        <ul>
+            <li>
+                <strong>Data Preservation & Archiving 🛡️ </strong>
+                <ul>
+                    <li><strong>Automatic Snapshots:</strong> Implemented <code>archive.py</code>, a new utility that creates timestamped backups of all critical data (<code>trades.db</code>, <code>pnl_history.csv</code>, <code>config.json</code>, logs) before any destructive action.</li>
+                    <li><strong>Safe Resets:</strong> Integrated the archiving system directly into the dashboard's <strong>Reset Bot</strong> logic. Whether performing a Soft or Hard reset, the system now automatically secures your data into the <code>archives/</code> directory first.</li>
+                    <li><strong>UI Transparency:</strong> Updated the Reset Modal to explicitly inform users that an automatic backup will be created, removing the fear of accidental data loss.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>System Logging 📝 </strong>
+                <ul>
+                    <li><strong>Log Rotation:</strong> Implemented <code>RotatingFileHandler</code> for <code>bot.log</code>. The system now automatically rotates logs when they reach 5MB (keeping the last 5 backups), preventing the log file from growing indefinitely and consuming disk space.</li>
+                </ul>
+            </li>
+        </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.9 (Jan 17, 2026) - The "Full Stack" Refactor</h2>
+
+    <ul>
+        <li>
+            <strong>Frontend & UI Overhaul (Major) 🎨 </strong>
+            <ul>
+                <li><strong>CSS Architecture:</strong> Extracted 400+ lines of inline styles from <code>index.html</code> into a centralized, modular <code>static/style.css</code>. This improves load times, readability, and makes future theme changes instant.</li>
+                <li><strong>Dashboard Refinement:</strong>
+                    <ul>
+                        <li>Restored the "Change Log" and "Help" buttons to the header line using flexbox utilities.</li>
+                        <li>Cleaned up Symbol Cards by removing distracting grid borders for a cleaner, modern look.</li>
+                        <li>Fixed the "Open Positions / Capital" display in the global status bar to sit correctly on a single line.</li>
+                    </ul>
+                </li>
+                <li><strong>Portfolio Logic:</strong> Updated the JavaScript parser to trim whitespace from <code>pnl_history.csv</code>, preventing crashes when generating the Equity Curve and Max Drawdown charts.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Backend & Strategy Logic ⚙️ </strong>
+            <ul>
+                <li><strong>"Zero Score" Fix (Ongoing):</strong> Updated the ghost process in <code>check_price_and_decide</code> to persist score data in memory, ensuring that even skipped trades or stops have valid context for logs.</li>
+                <li><strong>Scaling-In Patch:</strong> Fixed a critical sequencing error in the backend logic that was preventing "Scaling In" (DCA) buys from executing even when enabled.</li>
+                <li><strong>Safety Rails:</strong> Added a <code>scaling_in_multiplier</code> to <code>config.json</code>. This prevents the bot from dangerously allocating 90%+ of the portfolio to a single volatile asset during a pump.</li>
+                <li><strong>Notification Fix:</strong> Discord alerts now respect case sensitivity (<code>sell</code> vs <code>SELL</code>), fixing the bug where Sell notifications reported $0.00 P&L.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>System Tools 🔍 </strong>
+            <ul>
+                <li><strong>Integrated Auditor:</strong> Refactored <code>audit.py</code> to generate HTML output and integrated it directly into the Dashboard. You can now run a full "FOMO Detector" audit from the UI without touching the command line.</li>
+                <li><strong>Data Integrity:</strong> Updated <code>analysis.py</code> to cleanly format entries in <code>pnl_history.csv</code>, preventing future parsing errors.</li>
+                <li><strong>Config Profiles:</strong> Drastically widened the settings range in the default configuration files to give each strategy profile (Turtle, Sniper, Degen) a more distinct "personality."</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.8.2 (Jan 13, 2026) - Logic & Notifications Patch</h2>
+    
+    <ul>
+        <li>
+            <strong>Logic & Calculations</strong>
+            <ul>
+                <li><strong>Fixed "Zero Score" Bug:</strong> Corrected a logic sequencing error in <code>check_price_and_decide</code>. The bot now performs its full analysis (Score, RSI, MACD) <em>before</em> executing Stop-Loss or Take-Profit orders. This ensures that "SELL" logs contain valid data instead of zeroes.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Discord Assistant Upgrade</strong>
+            <ul>
+                <li><strong>Realized P&L:</strong> Sell notifications now calculate and display the exact Profit or Loss (USD & %) for that trade, so you can track performance instantly from your phone.</li>
+                <li><strong>Smart Commands:</strong> Removed the strict prefix requirement. You can now issue commands using plain text (e.g., <code>status</code>), slash commands <code>/status</code>, or the legacy prefix <code>!status</code>.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Ghost Testing Configuration</strong>
+            <ul>
+                <li><strong>Strategy Tuning:</strong> Adjusted ATR Stop-Loss and Take-Profit multipliers to provide trades with more "breathing room" in volatile markets, aiming to reduce premature stop-outs during backtesting.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.8.1 (Jan 11, 2026) - Discord API Hotfix</h2>
+    
+    <ul>
+        <li>
+            <strong>Critical System Repair</strong>
+            <ul>
+                <li><strong>Discord Rate Limiting (Error 429):</strong> Resolved a critical issue where the bot was spamming the Discord API with redundant user lookup requests during every trading cycle.
+                    <ul>
+                        <li><em>The Fix:</em> Implemented <strong>User Object Caching</strong> in `discord_notifier.py`. The bot now fetches your User ID once at startup and reuses the session for all subsequent alerts.</li>
+                        <li><em>Result:</em> Eliminated 429 errors and reduced API overhead by ~99%.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">    
+    <h2 class="aux-header-2">Version 2.8 (Jan 11, 2026) - The Sync & Polish Update</h2>
+    
+    <ul>
+        <li>
+            <strong>Interface & Configuration</strong>
+            <ul>
+                <li><strong>Exposed Dev Settings:</strong> Added UI controls for advanced features previously hidden in JSON (Versions 2.0-2.5). You can now toggle <code>scarcity_mode</code>, <code>volume_scoring</code>, <code>funding_monitor</code>, and configure <code>allow_scaling_in</code> and <code>market_regime_index</code> directly from the dashboard.</li>
+                <li><strong>Persistent Profile Selector:</strong> The Strategy Profile dropdown now remembers your active selection across page reloads using browser storage.</li>
+                <li><strong>Bug Fix:</strong> Fixed the "Max Invested %" input field not loading its saved value correctly on startup by correctly initializing <code>inputs.max_portfolio_exposure</code>.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Codebase Optimization</strong>
+            <ul>
+                <li><strong>JavaScript Refactoring:</strong> Completely rewrote <code>loadConfig</code> and <code>saveConfig</code> to use a centralized <code>inputs</code> object. Removed dozens of repetitive <code>getElementById</code> calls, resulting in cleaner, more efficient, and lightweight frontend code.</li>
+                <li><strong>JSON Cleanup:</strong> Removed obsolete and missing elements from the configuration structure to ensure perfect synchronization between the UI and the backend.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Logging & Documentation</strong>
+            <ul>
+                <li><strong>Log Clarity:</strong> Updated the "Max Exposure" blocking message. It now explicitly compares current vs. limit (e.g., <code>Blocked (Exp 30% >= Max 20%)</code>) to eliminate confusion regarding why a trade was skipped.</li>
+                <li><strong>Documentation Overhaul:</strong> Major update to <code>help.html</code>. Added a comprehensive "Config Dictionary," detailed the "Core Strategy" logic, and expanded the FAQ to cover new features like Scarcity Mode and Safe Shutdown procedures.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.7 (Jan 10, 2026) - The Command Center Update</h2>
+    
+    <ul>
+        <li>
+            <strong>Risk Management Protocol</strong>
+            <ul>
+                <li><strong>Max Exposure Cap:</strong> Implemented <code>max_portfolio_exposure</code>. This forces the bot to maintain a cash reserve (e.g., setting to 0.60 ensures 40% of the portfolio stays in cash), preventing "All-In" risks during market tops.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Integrated Terminal Core</strong>
+            <ul>
+                <li><strong>Raw Console Feed:</strong> Replaced the static log drawer with a live <code>ttyd</code> and <code>tmux</code> stream, mirroring the raw SSH output directly in the browser.</li>
+                <li><strong>Safety Locks:</strong> The web terminal is now set to <strong>Read-Only</strong> to prevent accidental keyboard interrupts (CTRL+C) from killing the bot process.</li>
+                <li><strong>Expanded Layout:</strong> Increased the log drawer width to <strong>480px</strong> to prevent text wrapping and improve readability.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Dashboard Aesthetics & Data</strong>
+            <ul>
+                <li><strong>True Black Theme:</strong> Replaced the Gunmetal Blue background with <code class="black">#151515</code> (True Black) for a unified, high-contrast "Dark Mode" look.</li>
+                <li><strong>Logic Viewer Upgrade:</strong> Fixed the "View Trading Logic" modal to display clean, formatted analysis logs matching the terminal output, rather than raw unreadable data.</li>
+                <li><strong>Status Logic Fix:</strong> Corrected the "Trading Status" indicator to accurately display <strong>GHOST MODE</strong> or <strong>LIVE</strong> based on the config, fixing previous "False Live" labels.</li>
+                <li>
+                    <strong>Advanced Analytics:</strong> The Portfolio Analysis module now includes professional performance metrics:
+                    <ul style="margin-top: 5px; color: #ccc;">
+                        <li><em>Win Rate:</em> The percentage of trades that closed in profit.</li>
+                        <li><em>Profit Factor:</em> Ratio of Gross Profit to Gross Loss (Efficiency score).</li>
+                        <li><em>Max Drawdown:</em> The largest percentage drop from the portfolio's peak value (Risk score).</li>
+                        <li><em>Avg Win/Loss:</em> Compares the average dollar amount gained on wins vs. lost on losses.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>System Internals & Config</strong>
+            <ul>
+                <li><strong>Reset Data Tool:</strong> Added a "Reset Bot Data" button in the Advanced Config section to wipe historical states/cache without needing SSH access.</li>
+                <li><strong>Logic Refactoring:</strong> Cleaned up <code>check_price_and_decide</code> and <code>execute_buy</code> functions to support the new risk safeguards and improve stability.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.6 (Jan 6, 2026) - The Hardware Update</h2>
+    
+    <div class="ascii-art">
+   .~~.   .~~.
+  '. \ ' ' / .'
+   .~ .~~~..~.
+  : .~.'~'.~. :
+ ~ (   ) (   ) ~
+( : '~'.~.'~' : )
+ ~ .~ (   ) ~. ~
+  (  : '~' :  ) Raspberry Pi
+   '~ .~~~. ~'
+       '~'
+    </div>
+
+    <ul>
+        <li>
+            <strong>Infrastructure Migration</strong>
+            <ul>
+                <li><strong>Raspberry Pi Deployment:</strong> Project now runs 24/7 on dedicated hardware using Linux/ARM architecture.</li>
+                <li><strong>Headless Operations:</strong> Implemented <code>tmux</code> and <code>ssh</code> workflow for persistent background tasks without a monitor.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>UI/UX Overhaul</strong>
+            <ul>
+                <li><strong>Matrix Sidebar Drawer:</strong> Added a collapsible "Verbose Log" drawer. This allows deep inspection of bot logic without cluttering the main dashboard.</li>
+                <li><strong>Aesthetics:</strong> Unified the color theme to a <code class="gunmetal">"Gunmetal Blue"</code> palette <code class="gunmetal">#191c22</code> to match the console environment seamlessly.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Backend Optimizations</strong>
+            <ul>
+                <li><strong>Minor Backend Changes:</strong> Refactored startup scripts to support the new directory structure and Flask host binding.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Future Roadmap</strong>
+            <ul>
+                <li><em>Coming Soon:</em> GitHub cloud backups, advanced mobile scaling, and predictive analysis modules.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.5 (Jan 1, 2026) - UI Polish & Config Tools</h2>
+    <ul>
+        <li>
+            <strong>UI Visual Upgrades</strong>
+            <ul>
+                <li><strong>Live Status Pulse:</strong> Adjusted the "Live Status" text in the dashboard to glow and pulse in sync with the status dot, making it immediately obvious when the bot is running.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Configuration & Analysis</strong>
+            <ul>
+                <li><strong>Profile Switcher:</strong> Added a dropdown to the UI to quickly switch between strategy profiles (e.g., Sniper, Safe, Default).</li>
+                <li><strong>Audit Upgrade:</strong> Adjusted <code>audit.py</code> to include a configuration comparison tool, allowing you to see which strategy profile would have caught a missed trade.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.4 (Dec 31, 2025) - Double Jeopardy & Scarcity Logic</h2>
+    <ul>
+        <li>
+            <strong>Double Jeopardy Fix (Regime Decoupling)</strong>
+            <ul>
+                <li><strong>Old Logic:</strong> Used <code>global_regime</code> (BTC) to set buy difficulty. If BTC was Bearish, it penalized every coin, even those performing well.</li>
+                <li><strong>New Logic:</strong> Now uses <code>local_regime</code> (The Coin's Trend). If a coin is in a <strong>Bull Trend</strong> (Price > 50 SMA), it gets the "Easy" threshold, even if BTC is dumping.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Oversold Override (The "V-Shape" Catcher)</strong>
+            <ul>
+                <li><strong>New Logic:</strong> If <code>RSI &lt; 25</code> (configurable), the bot activates "Emergency Buy" mode.</li>
+                <li><strong>The Override:</strong> This specific signal bypasses both the "Global Bear" blocker and the "MA Filter" blocker, allowing the bot to catch deep capitulation wicks.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Scarcity Mode (Let Winners Run)</strong>
+            <ul>
+                <li><strong>Logic:</strong> If <code>Price > 200 SMA</code> (Structural Bull), the bot assumes a "Supply Shock" or "Blue Sky Breakout" and adjusts targets accordingly.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Macro Context</strong>
+            <ul>
+                <li>Added a new <code>-> Macro Context:</code> line to the terminal output (e.g., <code>Struct: BEAR | Fund: 0.0000%</code>) for better debugging.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.3 (Dec 24, 2025)</h2>
+    <ul>
+        <li>
+            <strong>Roadmap Refactor</strong>
+            <ul>
+                <li>Refactored the codebase and reassessed the development roadmap to prioritize stability and "Smart Logic" over new features.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.2 (Dec 17, 2025) - Winter Safety & Auditing</h2>
+    <ul>
+        <li>
+            <strong>Crypto Winter Protocol</strong>
+            <ul>
+                <li>Added a dedicated safety protocol for extended bear markets ("Crypto Winter"), tightening entry requirements globally.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>New Tools</strong>
+            <ul>
+                <li><strong>Audit Script:</strong> Created <code>audit.py</code> to help analyze missed opportunities. <em>(Future update will add this to the UI Portfolio page).</em></li>
+                <li><strong>Funding Rate Monitor:</strong> Integrated <code>ccxt</code> to monitor global derivative funding rates to adjust scoring logic. <em>(Future update will add this to UI settings).</em></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 2.1 (Dec 10, 2025) - Core Stability & Optimization</h2>
+    <ul>
+        <li>
+            <strong>Codebase Refactor</strong>
+            <ul>
+                <li>Refactored and cleaned over <strong>600 lines</strong> of code in <code>trading_bot.py</code> to improve readability and execution speed.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Order Management</strong>
+            <ul>
+                <li><strong>Duplicate Order Fix:</strong> Solved an issue where the bot could trigger multiple buy orders for the same signal.</li>
+                <li><strong>Open Order Veto:</strong> Added logic to wait for an open order to fill before issuing new signals, preventing race conditions.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Scoring & Stability</strong>
+            <ul>
+                <li><strong>Smart Volume Scoring:</strong> Improved the volume weight calculation. <em>(Future update will add UI settings for weights).</em></li>
+                <li><strong>Terminal Fixes:</strong> Fixed the "blind exit" bug where the terminal would close unexpectedly.</li>
+                <li><strong>Server Logic:</strong> Fixed the Flask Server starting before the browser could cache data on cold starts.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="changelog-entry major-update">
+    
+    <div class="version-header">
+        <span class="version-tag v2">v2.0.0</span>
+        <span class="release-date">December 3, 2025</span>
+    </div>
+    
+    <h3 class="update-title">✨ The "Smart Safety" Milestone</h3>
+    <p class="update-summary">
+        A major architectural upgrade focusing on market awareness and capital preservation. Version 2.0 introduces Global Veto protocols and automatic bad-actor filtering.
+    </p>
+
+    <div class="changes-list">
+        
+        <h4>🛡️ Critical Safety Protocols</h4>
+        <ul>
+            <li>
+                <strong>Global Veto & Fake Breakout Protection:</strong> Added a logic layer that checks Bitcoin's stability before authorizing any altcoin buy. Prevents buying into "Bull Traps" during market-wide dumps.
+            </li>
+            <li>
+                <strong>Anti-Pump & Dump Guard:</strong> New configurable filter (UI) that blocks coins with massive 24h volatility (>30% swings). Prevents the bot from FOMO-buying tops.
+            </li>
+            <li>
+                <strong>Dip Immunity Logic:</strong> Fixed a loop in the trading logic to properly handle dip-buying opportunities without getting stuck in false signals.
+            </li>
+        </ul>
+
+        <h4>🧠 Strategy & Configuration</h4>
+        <ul>
+            <li>
+                <strong>ATR-Driven Exits:</strong> Adjusted <code>neutral_sell_threshold</code> to <code>-15%</code>. This effectively hands control over to the ATR (Average True Range) for trailing stops, while keeping a "hard crash" MTFA trigger as an emergency brake.
+            </li>
+        </ul>
+
+        <h4>🔧 System Stability (Scanner)</h4>
+        <ul>
+            <li>
+                <strong>Auto-Blacklisting:</strong> The scanner now automatically moves "bad coins" (corrupt data/API errors) to a <code>runtime_blacklist</code> so they don't clog the log.
+            </li>
+            <li>
+                <strong>Data Sanitization:</strong> Fixed scanner loop to safely print <code>0.0</code> for coins with missing information instead of crashing or throwing <code>NaN</code> errors.
+            </li>
+        </ul>
+
+        <h4>🎨 UI & Documentation</h4>
+        <ul>
+            <li>
+                <strong>Live Heartbeat:</strong> Added a pulsing Green/Grey indicator to the status panel. You can now visually verify the bot loop is running at a glance.
+            </li>
+            <li>
+                <strong>Documentation Update:</strong> Completely rewrote the <em>Safety Protocols</em> section in the Help page to reflect the new v2.0 logic.
+            </li>
+        </ul>
+
+    </div>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.9 (Nov 29, 2025) - The "Ecosystem & Context" Update</h2>
+    <ul>
+        <li>
+            <strong>Remote Monitoring Ecosystem Patch (Discord Sidecar)</strong>
+            <ul>
+                <li><strong>Live Notifications:</strong> Patched the <code>discord_notifier.py</code> service to run silently alongside the main bot.</li>
+                <li><strong>Direct Interaction:</strong> Updated secure DM commands (<code>!status</code>, <code>!history</code>, <code>!analyze</code>) to properly check portfolio health, P&L, and trade logic remotely. Notifications are slightly richer to share information clearly.</li>
+                <li><strong>Process Manager:</strong> Replaced the legacy Batch file logic with a Python Process Manager (<code>run_bot.py</code>) that handles launching the Dashboard, Bot, and Discord service simultaneously and ensures clean shutdowns.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Deep Trend Visibility (SMA Context)</strong>
+            <ul>
+                <li><strong>Dashboard Upgrade:</strong> Symbol Cards now display the <strong>Macro Trend</strong> (50-Day SMA) alongside the <strong>Micro Trend</strong> (MA Filter) for instant context (e.g., <code>Trend: $0.14 / $0.16</code>).</li>
+                <li><strong>Log Standardization:</strong> Updated all log outputs (Terminal, UI, History) to explicitly show the Local SMA value, clarifying exactly how far the price is from the Bear/Bull threshold.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Logic & Stability Fixes</strong>
+            <ul>
+                <li><strong>Volume Check Patch:</strong> Volume Check was using <code>"timeframe": "1d"</code> which resets at <code>UTC-00:00.</code> This was causing a false negative in volume checks at the start of the day. The patch solves the "00:00 UTC Reset" problem perfectly. At 1:00 AM, instead of seeing "1 hour of volume," the bot will see "The volume from 1:00 AM yesterday to 1:00 AM today.</li>
+                <li><strong>Dip Buy Safety Patch:</strong> Fixed a critical logic gap where "Dip Buys" were bypassing the Bear Safety Lock. The bot now correctly blocks dip entries if the specific coin enters a crash state.</li>
+                <li><strong>Terminal Hygiene:</strong> Eliminated additional "Ghost Timestamps" and duplicate log entries in the Windows Terminal for a cleaner, professional debug view.</li>
+                <li><strong>Backtester Cleanup:</strong> Resolved syntax warnings and variable scope issues in the simulation engine to ensure reliable long-term testing.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Other Stuff</strong>
+            <ul>
+                <li><strong>Frequently Asked Questions:</strong> There is now an FAQ section in the <code>Help</code> page. Click <code>Help</code> above the config settings to find it near the bottom of the page.</li>
+                <li><strong>Reset Bot Changes:</strong> Reseting the bot through the termianl Options now displays a series of confirmations to avoide accidently deleting trading history.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.8 (Nov 26, 2025) - The "Connected & Visual" Update</h2>
+    <ul>
+        <li>
+            <strong>Remote Command Center (Discord Integration)</strong>
+            <ul>
+                <li><strong>The Sidecar:</strong> Implemented <code>discord_notifier.py</code>, a standalone process that monitors the bot's database in real-time.</li>
+                <li><strong>Direct Messaging:</strong> The bot now sends private DMs for every Buy, Sell, and Profit Sweep.</li>
+                <li><strong>Interactive Commands:</strong> Added <code>!status</code> (Financial Health), <code>!history</code> (Recent Trades), and the powerful <code>!analyze [ID]</code> which retrieves the "Black Box" logic for any past trade.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Trend Context (SMA Integration)</strong>
+            <ul>
+                <li><strong>Deep Visibility:</strong> The <strong>50-Day SMA</strong> is now plumbed through the entire logic chain.</li>
+                <li><strong>Unified Dashboard:</strong> Symbol Cards now display the <strong>Short-Term Trend</strong> (MA Filter) and <strong>Long-Term Trend</strong> (50-Day SMA) side-by-side (e.g., <code>Trend: $0.14 / $0.16</code>).</li>
+                <li><strong>Log Context:</strong> Terminal and History logs now explicitly show the 50-Day SMA value next to the Market Regime, helping visualize exactly how close the price is to a Regime Flip.</li>
+            </ul>
+        </li>
+        <li>
+            <strong style="background-image: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red); -webkit-background-clip: text; color: transparent; font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; letter-spacing: 1px;">
+                 TERMINAL COLOR RESTORATION 
+            </strong> 🌈
+            <ul>
+                <li><strong>Dual-Stream Logging:</strong> Solved the architecture conflict between Flask and Windows Console. The bot now splits the log stream: Raw ANSI Colors go to the Terminal, while Clean Text goes to the Web UI.</li>
+                <li><strong>Visual Clarity:</strong> Restored Green (Success), Red (Failure), and Blue (Info) highlighting to the Command Prompt window, making it easier to spot actions while scrolling.</li>
+                <li><strong>Noise Reduction:</strong> Removed redundant timestamps and added smart visual spacing between symbol scans.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.7 (Nov 25, 2025) - The "Bear Bounce" & Unification Update</h2>
+    <ul>
+        <li>
+            <strong>Strategic Logic Upgrade: The Bear Bounce</strong>
+            <ul>
+                <li><strong>Concept:</strong> While the "Bear Safety Lock" protects capital, it missed bottom-fishing opportunities. We implemented a "Dead Cat Bounce" exception.</li>
+                <li><strong>Mechanism:</strong> If the market is in a <strong>Bear Trend</strong> (Price &lt; 50-Day SMA + High ADX), the bot now checks for a specific capitulation pattern: <code>RSI &lt; 25</code> (Deep Oversold) AND <code>RSI Hook</code> (Rising vs Previous).</li>
+                <li><strong>Execution:</strong> If confirmed, the bot bypasses the safety lock and executes a buy using the safe "Dip Allocation" size.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>The Grand Unification (Logging)</strong>
+            <ul>
+                <li><strong>Master Log Builder:</strong> Created a centralized logging system. The Windows Terminal, the Web UI "Logic Modal," and the Portfolio "History Modal" now all display data in the exact same, standardized format.</li>
+                <li><strong>Hybrid Regime Visibility:</strong> Logs now explicitly display local deviations. If BTC is Neutral but ETH is crashing, the log reads: <code>Market Regime: NEUTRAL (Local: BEAR)</code>, clarifying exactly why the Safety Lock engaged.</li>
+                <li><strong>Visual Noise Reduction:</strong> Cleaned up the Windows Terminal output, removing redundant timestamps and adding visual spacing between symbol scans.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>UI & UX Refinements</strong>
+            <ul>
+                <li><strong>Cleaner Dashboard:</strong> Removed the redundant <code>/USD</code> suffix from Symbol Cards.</li>
+                <li><strong>Instant Feedback:</strong> The Event Log now prints <span class="positive">📝 Config Saved</span> immediately when you update settings.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Stability & Smart Scanner</strong>
+            <ul>
+                <li><strong>Smart Scanner Fallback:</strong> Updated the Volatility Scanner to gracefully handle coins where Coinbase provides Volume but misses High/Low data (ranking by Log-Volume instead of crashing).</li>
+                <li><strong>Crash Fixes:</strong> Hardened the analysis engine against `NoneType` errors during API data gaps or new coin listings.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.6 (Nov 23, 2025) - The "Smart Scan" & Hybrid Logic Update</h2>
+    <ul>
+        <li>
+            <strong>Major Logic Upgrade: Hybrid Market Analysis</strong>
+            <ul>
+                <li><strong>Old Logic:</strong> "Coupled" — If BTC is Ranging, the bot assumed <em>all</em> coins were Ranging.</li>
+                <li><strong>New Logic:</strong> "Hybrid" — The bot now checks BTC for the global "Traffic Light" (Bull/Bear Regime), but checks <strong>each individual coin</strong> for its own Trend Strength (ADX).</li>
+                <li><strong>Benefit:</strong> Allows the bot to trade a specific Altcoin breakout ("Alt Season") even if Bitcoin is moving sideways.</li>
+                <li><strong>Global Status:</strong> Updated the dashboard to show <strong>Trend Breadth</strong> (e.g., "4/10 Trending") instead of a generic global ADX value.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>New Feature: Smart Volatility Scanner</strong>
+            <ul>
+                <li><strong>The Problem:</strong> Scanning by "Top % Gainers" often meant buying coins that had already pumped +30% (Buying the Top).</li>
+                <li><strong>The Solution:</strong> Implemented a <strong>"Smart Volatility"</strong> mode (<code>Volatility * Log(Volume)</code>). This finds coins that are "waking up" with high activity <em>before</em> the massive price spike happens.</li>
+                <li><strong>Configurable:</strong> Added a "Scanner Mode" dropdown to the UI. You can switch between <code>VOLATILITY</code> (Early Detection) and <code>GAINERS</code> (Momentum Chasing) on the fly.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Dashboard & UI Refinements</strong>
+            <ul>
+                <li><strong>4x2 Grid Layout:</strong> Added <strong>24h Change</strong> to the Symbol Cards to perfectly balance the grid. You can now compare "5m Momentum" vs "24h Trend" side-by-side.</li>
+                <li><strong>Robust Data Fetching:</strong> Switched percentage calculations to use <strong>OHLCV Candles</strong> instead of Ticker Snapshots. This fixed the "0.00%" display bug caused by API data gaps.</li>
+                <li><strong>Vault Separation:</strong> Fixed the "Open Positions" math to correctly subtract the Profit Vault (USDC) balance, ensuring the dashboard distinguishes between "Risk Capital" and "Safe Capital."</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Stability Fixes</strong>
+            <ul>
+                <li><strong>Portfolio Modal:</strong> Fixed a syntax error preventing the "Logic Details" modal from opening on historical trades.</li>
+                <li><strong>Startup Sequence:</strong> Fixed a race condition where the scanner would sometimes return empty lists due to missing High/Low data from the exchange.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.5 (Nov 22, 2025) - "Bear Safety Lock Tweaks & Performance Update</h2>
+    <ul>
+        <li>
+            <strong>Bear Safety Lock Tweaks</strong>
+            <ul>
+                <li><strong>The Logic:</strong> Adjusted the logic to use a "Circuit Breaker" that blocks all BUY signals when the Market is <code>Bearish</code> AND <code>Trending</code> (High ADX).</li>
+                <li><strong>The Control:</strong> Added a toggle in the Config Panel so you can disable this safety feature if you want to take higher risks.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Profit Vault Changes</strong>
+            <ul>
+                <li><strong>Auto-Sweeping:</strong> The bot now pproperly monitors your cash balance. If it exceeds <code>Starting Capital + Threshold</code>, it automatically buys <strong>USDC</strong> to lock in gains.</li>
+                <li><strong>Dashboard Update:</strong> Separated "Profit Vault" from "Open Positions" in the Global Status panel to clearly show "Safe Capital" vs. "Risk Capital."</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Optimization & Performance</strong>
+            <ul>
+                <li><strong>Aggressive Sizing:</strong> Because the Safety Lock protects against crashes, we optimized the bot to be more aggressive in Bull markets. Increased sizing tiers to 30-45% for high-confidence signals.</li>
+                <li><strong>Numba Backtester:</strong> Refactored the backtesting engine to use JIT compilation (Numba), increasing optimization speed by ~100x.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Bug Fixes & UI Polish</strong>
+            <ul>
+                <li><strong>Fixed Startup Freeze:</strong> Resolved a race condition where `cash_balance` was undefined on the first cycle, causing the dashboard to remain empty.</li>
+                <li><strong>Portfolio Modal:</strong> Fixed syntax errors in the "Logic Details" button that prevented the modal from opening.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.5 (Nov 21, 2025) - The "Bear Safety Lock" Update</h2>
+    <ul>
+        <li>
+            <strong>Strategic Logic Upgrade: Bear Safety Lock</strong>
+            <ul>
+                <li><strong>Problem:</strong> High ADX in a Bear Market indicates a strong crash, not a rally. Previous logic was trying to buy "momentum" during waterfalls.</li>
+                <li><strong>Solution:</strong> Implemented a hard block on all BUY signals when <code>Regime = Bear</code> AND <code>Character = Trending</code>.</li>
+                <li><strong>Result:</strong> Reduced backtest drawdown from -5.13% to -0.78% on historical data.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>New Feature: Profit Vault (Cash Sweeping)</strong>
+            <ul>
+                <li><strong>Concept:</strong> Automatically secures excess profits by moving them out of the active trading float.</li>
+                <li><strong>Mechanism:</strong> When <code>Cash Balance > (Starting Capital + Threshold)</code>, the bot automatically buys <strong>USDC</strong> to lock in gains.</li>
+                <li><strong>Benefit:</strong> Locks in realized gains and prevents the bot from risking accumulated profits on future trades ("House Money" protection).</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Portfolio & History Upgrades</strong>
+            <ul>
+                <li><strong>Logic Viewer:</strong> The "Logic Details" button in the Portfolio popup is now fully functional. It retrieves the "Black Box" JSON metadata from <code>trades.db</code> and formats it into a readable Terminal view.</li>
+                <li><strong>Crash Fix:</strong> Fixed a syntax error where single quotes in the logic log were breaking the "View" button.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Stability & Clean Up</strong>
+            <ul>
+                <li><strong>Startup Crash Fix:</strong> Resolved a "Silent Failure" where the dashboard would stay empty because <code>cash_balance</code> was referenced before definition.</li>
+                <li><strong>Data Type Safety:</strong> Hardened the Dashboard against crashes caused by string/number mismatches in Volume formatting.</li>
+                <li><strong>Disk Hygiene:</strong> Removed the redundant <code>trade_history_logic.txt</code> file generation (since the DB now handles this).</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.4 (Nov 19, 2025) - UI Polish & Config Editor Upgrade</h2>
+    <ul>
+        <li>
+            <strong>Enhanced UI/UX Polish</strong>
+            <ul>
+                <li><strong>Redesigned Symbol Cards:</strong> Switched to a flexible column layout with <code>box-sizing</code> fixes to prevent overlap. Aligned the "View Trading Logic" button to the bottom of every card for a consistent grid look.</li>
+                <li><strong>Improved Button Styling:</strong> Changed the "View Analysis" button to a professional Dark Gray ("View Trading Logic") with top margins to prevent text collision.</li>
+                <li><strong>Live Trading Warning:</strong> Restored the high-visibility Red/Orange warning box for the "Enable Live Trading" toggle to ensure safety awareness.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Advanced Config Editor</strong>
+            <ul>
+                <li><strong>Full-Screen Editor:</strong> Upgraded the "View Raw JSON" modal to a large (85% height), editable text area.</li>
+                <li><strong>Validation & Saving:</strong> Added client-side JSON syntax validation (catching typos before saving) and a "Save Changes" button that instantly updates the live bot configuration without a restart.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Event Log & Status Restoration</strong>
+            <ul>
+                <li><strong>Colored Event Log:</strong> Restored color-coded logs (Green for Buy, Red for Sell/Error) by switching to a structured data object format <code>{message, type}</code> instead of raw text strings.</li>
+                <li><strong>Status Icons:</strong> Re-added emojis (🚀 for Start, ⚠️ for Errors) to the event stream for better readability.</li>
+                <li><strong>Global Status Refinements:</strong> Renamed fields for clarity ("Bot Mode" -> "Trading Status", "Next Cycle In" -> "Next Cycle").</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Detailed Analysis Modal (Terminal View)</strong>
+            <ul>
+                <li><strong>Terminal-Style Logs:</strong> Replaced the generic "Strategy/Risk" tables with a high-fidelity "Terminal View" log inside the modal.</li>
+                <li><strong>Rich Data:</strong> Now displays every step of the decision logic in chronological order (e.g., "Volume Check: FAILED > MA Filter: PASSED > Score: 1.2").</li>
+                <li><strong>Visual Cues:</strong> Added green/red highlighting to key values (Pass/Fail, Profit/Loss) within the log text for instant readability.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.3 (Nov 18, 2025) - Final V1.1 Stabilization</h2>
+    <ul>
+        <li>
+            <strong>CRITICAL ARCHITECTURAL STABILITY (JSON Fix)</strong>
+            <ul>
+                <li><strong>Permanent Fix:</strong> Eliminated persistent <code>JSON.parse</code> errors by replacing the unstable custom stream handler (<code>QueueLogHandler</code>).</li>
+                <li><strong>Logging Rework:</strong> Replaced all native <code>print()</code> calls with stable log functions (<code>log_analysis</code>/<code>log_terminal</code>).</li>
+                <li><strong>Color Neutralization:</strong> Implemented conditional disabling of ANSI color codes in <code>trading_bot.py</code> when running inside Flask, ensuring log streams remain clean.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>UI/UX & Data Structure Overhaul</strong>
+            <ul>
+                <li><strong>Analysis Detail Modal:</strong> Implemented "View Analysis" button to open a dedicated modal that displays structured, per-symbol debug data (ATR, MA Filter result, MACD Score). This replaces noisy terminal prints.</li>
+                <li><strong>Global Status Redesign:</strong> Refactored the dashboard to a logical 3-column format, moving Buy/Sell thresholds to the global status bar.
+                </li>
+                <li><strong>Data Consistency:</strong> Fixed the display of Total Portfolio Value and Warm-Up Status to prevent flickering (`N/A` or `$0.00`) by ensuring the shared status dictionary is updated correctly.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Risk Management Enhancements</strong>
+            <ul>
+                <li><strong>MA Trend Filter:</strong> Added the configurable Short-Term Moving Average filter to block dangerous "pump and dump" buy signals.</li>
+                <li><strong>Cash Reserve:</strong> Updated allocation logic to calculate trade size based on <strong>usable cash</strong> (Total Cash - Low Funds Reserve), making the reserve a truly protected capital floor.</li>
+                <li><strong>Min Trade Size:</strong> Added <code>min_trade_size</code> to configuration and logic to block small trades that are inefficient due to fees.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.2 (Nov 10, 2025)</h2>
+    <ul>
+        <li>
+            <strong>Critical Logic Fix: "Dip-Buy Death Spiral"</strong>
+            <ul>
+                <li>Fixed the bug where a <code>999</code> score (from a dip-buy) would trigger the 90% allocation tier.</li>
+                <li>Added a new <code>dip_buy_allocation_percent</code> setting to the config and UI.</li>
+                <li><code>execute_buy</code> now has special logic to use this new fixed allocation for all dip-buys, ignoring the sizing tiers.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Critical Logic Fix: "Scaling In" Removed</strong>
+            <ul>
+                <li>Permanently disabled the "allow scaling in" feature to prevent the "all-in" bug.</li>
+                <li>Cleaned up <code>execute_buy</code> to only check for max positions and if a position is already open.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Bug Fixes & Quality of Life</strong>
+            <ul>
+                <li><strong>Updated <code>setup.bat</code>:</strong> Added a final "pause" and "Run start_bot.bat" message for a better first-time user experience.</li>
+                <li><strong>Fixed UI Glyphs:</strong> Replaced <code>>=</code> and <code><=</code> in the HTML with <code>&ge;</code> and <code>&le;</code> for a cleaner look.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">    
+    <h2 class="aux-header-2">Version 1.1 (Nov 9, 2025)</h2>
+    <ul>
+        <li>
+            <strong>Major Feature: "Ghost Mode" vs. "Live Trading"</strong>
+            <ul>
+                <li>Added a <code>"live_trading": false</code> master switch to <code>config.json</code>.</li>
+                <li>Added a "Enable Live Trading" checkbox to the UI with a pop-up safety confirmation.</li>
+                <li>Renamed <code>simulate_buy</code>/<code>sell</code> to <code>execute_buy</code>/<code>sell</code> to handle both live and ghost trades.</li>
+                <li>Bot now fetches the *real* cash balance from the exchange when in Live Mode.</li>
+                <li>Event Log now specifies if a trade was <code>LIVE</code> or <code>GHOST</code>.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Major Feature: "Buy & Hold" Analysis</strong>
+            <ul>
+                <li>The "View Portfolio" page now calculates a real "Buy & Hold" comparison.</li>
+                <li><code>analysis.py</code> now finds the bot's first trade date from <code>trades.db</code> and fetches historical prices for BTC, ETH, and LINK from that start date to calculate their "HODL" P&L.</li>
+                <li>Fixed a bug in <code>analysis.py</code> to robustly handle cases where no historical data was found.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Major Feature: Real P&L Equity Curve</strong>
+            <ul>
+                <li>The "Portfolio Equity Curve" chart is no longer mock data.</li>
+                <li>Created <code>log_portfolio_value()</code> in <code>trading_bot.py</code> to save the portfolio value to <code>pnl_history.csv</code> once per cycle.</li>
+                <li>Upgraded <code>analysis.py</code> to read this new <code>pnl_history.csv</code> file to generate the real P&L chart.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Major Feature: Asymmetrical Volume Logic</strong>
+            <ul>
+                <li>Fixed a critical logic flaw where the bot was blocking "Sell the Rip" signals.</li>
+                <li>The volume check is now "smarter": "Trending" signals still require high volume, but "Ranging" (Mean Reversion) sells now *ignore* the volume check, correctly identifying low-volume rallies as weak.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Feature: Configurable Volume Timeframe</strong>
+            <ul>
+                <li>Added a dropdown to the UI to select the timeframe for the volume check (e.g., '5m', '1h').</li>
+                <li>Updated <code>run_mtfa</code> to fetch and calculate median volume using this new setting.</li>
+                <li>Fixed a bug in <code>saveConfig</code> in <code>index.html</code> that was ignoring the user's selection.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Bug Fixes & Quality of Life</strong>
+            <ul>
+                <li><strong>Fixed Silent Terminal:</strong> Resolved the conflict between <code>app.py</code> and the bot scripts. <code>app.py</code> is now the sole controller of terminal output, and all logs (including colors) are correctly printed.</li>
+                <li><strong>Silenced Noisy Logs:</strong> The terminal is now cleaner. <code>app.py</code> filters out the repetitive <code>GET /status</code> and <code>GET /events</code> log messages.</li>
+                <li><strong>Fixed P&L "Flicker":</strong> The "Portfolio Value" in the UI no longer flashes to $0.00 during analysis.</li>
+                <li><strong>Added Button Feedback:</strong> The "Start," "Stop," and "Analyze" buttons now print confirmation messages to the Event Log.</li>
+                <li><strong>Fixed "View Portfolio" Button:</strong> Correctly wired up the button to open the new <code>portfolio.html</code> pop-up.</li>
+                <li><strong>Fixed Caching:</strong> Added a no-cache config to <code>app.py</code> to force the browser to always load the newest version of the GUI.</li>
+                <li><strong>Added "Flavor Text":</strong> The terminal log is now more descriptive, printing reasons for signals like <code>(Bear Trap)</code> or <code>(Buy the Dip)</code>.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 1.0 (Nov 8, 2025)</h2>
+    <ul>
+        <li>Added new "View Portfolio" pop-up page (<code>portfolio.html</code>).</li>
+        <li>Implemented (mock) live P&L Equity Curve chart.</li>
+        <li>Implemented (mock) "Buy & Hold" comparison logic.</li>
+        <li>Fixed disclaimer styling and spacing in the Event Log.</li>
+        <li>Fixed the <code>favicon.ico</code> 404 error.</li>
+        <li>Resolved script conflicts by "cleaning" <code>trading_bot.py</code> and <code>analysis.py</code>.</li>
+        <li>Fixed P&L value "flickering" to $0.00 during analysis.</li>
+        <li>Added "Bot Started" and "Stop Signal" messages to the Event Log.</li>
+        <li>Initial setup of Flask server, web UI, and bot threading.</li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 0.9 (Mid-October - Early Nov 2025) - The Web UI</h2>
+    <ul>
+        <li>
+            <strong>Major Pivot:</strong> Scrapped the Tkinter GUI due to complexity and limitations.
+        </li>
+        <li>
+            <strong>Flask Server:</strong> Created <code>app.py</code>, a new web server to act as the master controller.
+        </li>
+        <li>
+            <strong>Web Dashboard:</strong> Built the <code>index.html</code> dashboard, replacing the clunky GUI with a clean web interface.
+        </li>
+        <li>
+            <strong>Real-Time Status:</strong> Implemented the <code>bot_status</code> dictionary, allowing the bot (in a background thread) to send live data to the web UI.
+        </li>
+        <li>
+            <strong>New UI Features:</strong>
+            <ul>
+                <li>Added the live "Dashboard" grid with a "Symbol Card" for each asset.</li>
+                <li>Created the "Event Log" to show key actions (Buy/Sell/Stop).</li>
+                <li>Implemented the pop-up "Help Page" (<code>help.html</code>).</li>
+                <li>Created the form-based "Config Panel" to replace the raw JSON <code>&lt;textarea&gt;</code>.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Logic Upgrades:</strong>
+            <ul>
+                <li>Added "Warm-Up" mode to prevent bad trades on a cold start.</li>
+                <li>Created the "Advanced Settings" modal for complex JSON editing.</li>
+                <li>Added dynamic price formatting to handle low-value coins.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 0.5 (Early - Mid-October 2025) - The "Smart" Strategy</h2>
+    <ul>
+        <li>
+            <strong>Dual-Strategy Core:</strong> This was the biggest logic upgrade.
+            <ul>
+                <li>Added <strong>Market Regime</strong> (SMA) to identify Bull/Bear markets.</li>
+                <li>Added <strong>Market Character</strong> (ADX) to identify "Trending" vs. "Ranging" markets.</li>
+                <li>Bot now automatically switches between a <strong>Momentum</strong> strategy (in Trending markets) and a <strong>Mean Reversion</strong> strategy (in Ranging markets).</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Advanced Risk Management:</strong>
+            <ul>
+                <li>Upgraded from a simple stop-loss to a dynamic <strong>ATR Trailing Stop-Loss</strong>.</li>
+                <li>Added <code>max_open_positions</code> to limit risk.</li>
+                <li>Implemented dynamic <strong>Sizing Tiers</strong> based on signal score.</li>
+                <li>Added "Buy the Dip" (ATR Buy Back) logic.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Scoring Engine:</strong>
+            <ul>
+                <li>Added <strong>MACD</strong> and <strong>RSI</strong> as secondary confirmation/filter indicators.</li>
+                <li>The Final Score is now a combination of MTFA + MACD.</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="version-card">
+    <h2 class="aux-header-2">Version 0.1 (September 2025) - The Core Bot</h2>
+    <ul>
+        <li>Initial project creation (<code>trading_bot.py</code>).</li>
+        <li>Established <code>ccxt</code> connection to Coinbase.</li>
+        <li>Created core simulation functions: <code>simulate_buy</code> and <code>simulate_sell</code>.</li>
+        <li>Implemented basic data files: <code>config.json</code>, <code>portfolio.json</code>.</li>
+        <li>Created <code>trades.csv</code> and <code>record_trade</code> function for logging.</li>
+        <li>Built the first <strong>MTFA (Multi-Timeframe Analysis)</strong> scoring engine.</li>
+    </ul>
+</div>
+    </body>
+</html>

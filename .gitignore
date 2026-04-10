@@ -1,0 +1,47 @@
+# --- Security (NEVER COMMIT THESE) ---
+coinbase_keys.json
+discord_keys.json
+.env
+
+# --- Local Database & State ---
+trades.db
+portfolio.json
+optimizer.db
+config.json
+config_*.json
+config_*.old
+
+# --- Logs & History ---
+pnl_history.csv
+trades.csv
+notes.txt
+trade_history_logic.txt
+optimizer_results*.txt
+*.log
+archives/
+bot.log
+pnl_history.csv
+portfolio.json
+config.json
+coinbase_keys.json
+.env
+data/history_logs/
+
+# --- Data Folders ---
+historical_data/
+data/history_logs/
+
+# --- Python System Files ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# --- IDE & System Settings ---
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+.beta
+

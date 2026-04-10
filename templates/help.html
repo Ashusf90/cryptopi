@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Help & Glossary</title>
+    <link rel="stylesheet" href="../static/style.css">
+    <style>
+        /* Only apply these rules on screens smaller than 768px (Tablets & Phones) */
+        @media (max-width: 768px) {
+            
+            /* 1. Boost Base Text Size */
+            body.aux-body, p, li, div {
+                font-size: 18px !important; /* Standard is usually 14-16px */
+                line-height: 1.6 !important; /* More breathing room between lines */
+            }
+
+            /* 2. Make Headings Stand Out */
+            h1 { font-size: 28px !important; margin-bottom: 20px !important; }
+            h2 { font-size: 24px !important; margin-top: 30px !important; }
+            h3 { font-size: 20px !important; color: var(--accent-primary); }
+
+            /* 3. Fix Code Blocks (Prevent tiny text) */
+            code, .highlight-box {
+                font-size: 14px !important; /* Readable but distinct from body text */
+            }
+
+            /* 4. Make "Details" Toggles Easier to Tap */
+            summary {
+                font-size: 19px !important;
+                padding: 15px 0 !important; /* Bigger tap target for fingers */
+            }
+
+            /* 5. Add side padding so text doesn't hit the screen edge */
+            body.aux-body {
+                padding: 20px !important;
+                max-width: 100% !important;
+            }
+        }
+    </style>
+    <script>
+    const saved = localStorage.getItem('app_theme');
+    if (saved && saved !== 'default') {
+        document.documentElement.setAttribute('data-theme', saved);
+    }
+    </script>
+</head>
+<body class="aux-body">
+    <h1>📘 Bot Strategy & Operations Manual</h1>
+
+    <h2>1. Operations Guide</h2>
+    
+    <h3>🚀 How to Run the Bot</h3>
+    <ul>
+        <li><strong>Start:</strong> Open your SSH terminal and run <code>./start.sh</code>. This launches the bot in a background <code>tmux</code> session and starts the web server.</li>
+        <li><strong>Stop:</strong> Click the <code class="negative">Stop Bot</code> button in the dashboard. This gracefully ends the trading loop.</li>
+        <li><strong>Kill (Force Stop):</strong> If the dashboard is unresponsive, use SSH: <code>pkill -f run_bot.py</code>.</li>
+        <li><strong>Test Mode:</strong> Ensure the <code>Enable Live Trading</code> checkbox is <strong>unchecked</strong>. The bot will simulate trades with fake money in <code>GHOST MODE</code> sometimes called Paper Trading.</li>
+        <li><strong>Go Live:</strong> Stop the bot. Check <code>Enable Live Trading</code>. Save Config. Click <strong>Start Bot</strong>.</li>
+    </ul>
+
+    <h3>🖥️ The Terminal Drawer</h3>
+    <p>The new slide-out drawer displays the raw <code>tmux</code> console output.</p>
+    <ul>
+        <li><strong>Read-Only:</strong> Keyboard input is disabled to prevent accidental commands (like Ctrl+C) from killing the bot via the browser.</li>
+        <li><strong>Copying Text:</strong> Because mouse-scrolling is enabled, standard text selection is intercepted. Hold <code>Shift</code> + <code>Click & Drag</code> to highlight text for copying.</li>
+    </ul>
+
+    <h2>2. Core Strategy (The "Brain")</h2>
+    <p>The bot's "brain" utilizes a <strong>Hybrid Market Analysis</strong> engine. It evaluates the <strong>Global Market Mood</strong> (Bitcoin) to set dynamic risk thresholds, while simultaneously identifying the specific <strong>Local Character</strong> of each coin (<span class="positive">Trending</span> or <span class="neutral">Ranging</span>) to apply the correct strategy.</p>
+    <ul>
+        <li>
+            <strong>1. Global vs. Local Logic (The Hybrid Brain)</strong>
+            <br>The bot uses a two-tiered decision engine:
+            <ul>
+                <li><strong>Global Regime (BTC):</strong> Acts as the <span class="neutral">Traffic Light</span>. It sets the <strong>Buy/Sell Thresholds</strong>. If BTC is <span class="positive">BULLISH</span>, thresholds are lower (aggressive). If <span class="negative">BEARISH</span>, thresholds are higher (conservative).</li>
+                <li><strong>Local Character (The Coin):</strong> Acts as the <span class="positive">Driver</span>. The bot checks the specific coin's <strong>ADX</strong> and <strong>50-Day SMA</strong> to decide <em>which</em> strategy to use.</li>
+            </ul>
+        </li>
+
+        <li>
+            <strong>2. If Coin is TRENDING</strong> (Local ADX is High):
+            <br>The bot normally uses a <span class="positive">Momentum</span> strategy (Buying Breakouts).
+            <br><em>However, it checks the Local Trend (Coin vs. 50-Day SMA) for safety:</em>
+            <ul>
+                <li><strong>Bull Trend (Price > SMA):</strong> Standard Momentum. <strong class="positive">BUY</strong> when <code>Score ≥ Buy Threshold</code>.</li>
+                
+                <li><strong>Bear Trend (Price < SMA):</strong> <strong class="negative">SAFETY LOCK ACTIVE</strong>.
+                    <br>The bot detects a "Crash" and <strong class="negative">BLOCKS</strong> all standard buy signals to prevent catching a falling knife.
+                    <br><strong>The Only Exception (Bear Bounce):</strong> It will take a high-risk, fixed-size trade <em>only</em> if:
+                    <ul>
+                        <li>1. RSI is Deeply Oversold (<code>RSI &lt; 25</code>).</li>
+                        <li>2. RSI is Hooking Up (<code>Current > Previous</code>).</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+
+        <li>
+            <strong>3. If Coin is RANGING</strong> (Local ADX is Low):
+            <br>The bot uses a <span class="neutral">Mean Reversion</span> strategy (Buying Dips, Selling Rips).
+            <ul>
+                <li><strong>Bull/Neutral Regime:</strong> <strong class="positive">BUY THE DIP</strong> when <code>Score ≤ Sell Threshold</code>. Requires Volume confirmation.</li>
+                <li><strong>Bear Regime:</strong> <strong class="negative">SELL THE RIP</strong> when <code>Score ≥ Buy Threshold</code>. Ignores Volume check (to exit weak rallies).</li>
+                <li><strong class="negative">HARD RULE:</strong> The bot will <em>never</em> buy a dip in a Bear + Ranging market.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>3. Safety Protocols & Overrides</h2>
+
+    <div class="safety-logic-container">
+        <div class="logic-step">
+            <h4>1. Bear Safety Lock (The "Anti-Crash" Shield)</h4>
+            <p><strong>Scenario:</strong> Market is Bearish + Coin is Trending (High ADX).</p>
+            <ul>
+                <li><strong>Result:</strong> <span class="badge stop">⛔ HARD BLOCK</span></li>
+                <li><strong>Reason:</strong> High ADX in a bear market usually means a violent crash. We do not catch falling knives.</li>
+            </ul>
+        </div>
+
+        <div class="logic-step">
+            <h4>2. Oversold Override (The V-Shape Catch)</h4>
+            <p><strong>Scenario:</strong> RSI drops below <code>25</code> (Extreme Panic).</p>
+            <ul>
+                <li><strong>Result:</strong> <span class="badge warn">⚠️ BYPASS SAFETY</span></li>
+                <li><strong>Reason:</strong> Even in a crash, an RSI this low usually guarantees a "Dead Cat Bounce." The bot ignores the Bear Safety Lock to scalp the quick rebound.</li>
+            </ul>
+        </div>
+
+        <div class="logic-step">
+            <h4>3. Max Exposure Cap</h4>
+            <p><strong>Check:</strong> Is <code>(Crypto Value / Total Balance)</code> > <code>Max Invested %</code>?</p>
+            <ul>
+                <li><strong>YES:</strong> <span class="badge stop">⛔ BLOCK BUY</span></li>
+                <li><strong>Reason:</strong> Risk management. Prevents the bot from going "All In" at the top. It forces you to keep a cash reserve (dry powder).</li>
+            </ul>
+        </div>
+
+        <div class="logic-step">
+            <h4>4. Accumulator Mode (User Enabled)</h4>
+            <br><em>Activated by checking <code>Accumulator Mode</code> in the Config Panel. It is also recommended to enable <code>Allow Scalling In</code> to allow true Dollar Cost Averaging by accumulation.</em>
+            <br>This mode shifts the bot's goal from <strong>Swing Trading</strong> (Catching moves) to <strong>Position Building</strong> (Farming).
+            <ul>
+                <li><strong>Logic Shift:</strong> If you already hold the coin and price drops below your average entry, the bot <strong>ignores</strong> standard momentum requirements.</li>
+                <li><strong>The Trigger:</strong> It looks for "Dip Buy" opportunities based on your <code>Dip Buy ATR x</code> setting.</li>
+                <li><strong>Goal:</strong> Aggressively lowers your Cost Basis (DCA) to turn a losing position into a winning one faster.</li>
+                <li><strong class="negative">RISK WARNING:</strong> This increases exposure in a downtrend. Only enable this for high-conviction assets that you are willing to hold long-term.</li>
+            </ul>
+            <h4>🌡️ The Heat Gauge</h4>
+            <p>The dashboard symbol cards features a dynamic temperature badge that provides instant momentum feedback.</p>
+            <ul>
+                <li>
+                    <strong>Momentum Scale:</strong> 
+                    The text color shifts based on the asset's RSI and Trend Strength:
+                    <br>
+                    <strong style="background-image: linear-gradient(to right, #4a9eff, #d500f9, #ff3d00); -webkit-background-clip: text; color: transparent;">
+                        Blue (Cold/Buy) → Purple (Warm) → Red (Hot/Sell)
+                    </strong>
+                </li>
+                <li><strong>How to read it:</strong>
+                    <ul>
+                        <li><strong>Blue:</strong> Market is cooling off or oversold. (Potential Entry)</li>
+                        <li><strong>Purple:</strong> Market is neutral or trending normally.</li>
+                        <li><strong>Red:</strong> Market is overheated or overbought. (Potential Exit)</li>
+                    </ul>
+                </li>
+            </ul>
+
+        </div>
+
+    </div>
+
+    <h2>4. Config Panel Dictionary</h2>
+    <p>A complete breakdown of every setting available in the dashboard.</p>
+
+    <h3>1. Bot Operation</h3>
+    <ul>
+        <li><code>Enable Warm-Up</code>: If checked, the bot waits for X cycles before making <strong>new</strong> buys. Indicators need time to fill their buffers (e.g., ADX needs 14 candles).</li>
+        <li><code>Warm-Up Cycles</code>: The number of cycles to wait (e.g., 25).</li>
+        <li><code>Trending Interval</code>: Seconds to sleep between scans when the market is Moving (High ADX). Standard: 60s.</li>
+        <li><code>Ranging Interval</code>: Seconds to sleep when the market is Choppy (Low ADX). Standard: 300s (5m) to save API calls.</li>
+    </ul>
+
+    <h3>2. Strategy Toggles & Extras</h3>
+    <ul>
+        <li><code>Scarcity Mode</code>: <strong>Bull Market Only.</strong> If enabled, the bot ignores "Overbought" sell signals (RSI > 70) as long as momentum is high. Prevents selling too early in a parabolic run.</li>
+        <li><code>Allow Scaling In</code>: If enabled, the bot can buy more of a coin you already own (Dollar Cost Averaging). If disabled, it only buys new coins.</li>
+        <li><code>Funding Monitor</code>: Monitors exchange Funding Rates. Penalizes the score if the crowd is too greedy (High positive funding).</li>
+        <li><code>Vol Scoring</code>: Adjusts the trade score based on Volume/Price divergence. Adds a "Pump Boost" or "Dump Penalty".</li>
+        <li><code>Regime Index</code>: The symbol used to judge the "Global" market mood (Default: <code>BTC/USD</code>).</li>
+    </ul>
+
+    <h3>3. Market Analysis</h3>
+    <ul>
+        <li><code>Scan Top Movers</code>: If enabled, ignores your manual symbol list and dynamically scans the top X coins by volume/gain.</li>
+        <li><code>Scanner Mode</code>: 
+            <ul>
+                <li><strong>GAINERS:</strong> Chases coins with the highest 24h % change (High Risk).</li>
+                <li><strong>VOLATILITY:</strong> Hunts for coins waking up from sleep (Smart Volatility).</li>
+            </ul>
+        </li>
+        <li><code>Top N Symbols</code>: How many coins to scan (e.g., 10 or 20).</li>
+        <li><code>ADX Period</code>: Lookback window for trend strength (Std: 14).</li>
+        <li><code>ADX Threshold</code>: The ADX value that separates a "Trending" market from a "Ranging" one (Std: 25).</li>
+        <li><code>Blacklist</code>: Comma-separated list of coins to <strong>never</strong> trade (e.g., stablecoins or broken pairs).</li>
+    </ul>
+
+    <h3>4. Core Strategy & Thresholds</h3>
+    <ul>
+        <li><code>Neutral Buy</code>: The base Score required to buy in a sideways market (e.g., 1.5).</li>
+        <li><code>Neutral Sell</code>: The base Score required to sell in a sideways market (e.g., -10.0).</li>
+        <li><code>Bull/Bear Mod</code>: A modifier applied to the thresholds based on the Global Regime.
+            <ul>
+                <li>In <strong>Bull</strong> markets, this is <em>subtracted</em> from the Buy threshold (Making it easier to buy).</li>
+                <li>In <strong>Bear</strong> markets, this is <em>added</em> (Making it harder to buy).</li>
+            </ul>
+        </li>
+        <li><code>MACD Weight</code>: How much influence the MACD momentum has on the final score (0.1 to 1.0).</li>
+    </ul>
+
+    <h3>5. RSI Settings</h3>
+    <ul>
+        <li><code>Overbought</code>: RSI level (e.g., 70-85) that blocks new buys.</li>
+        <li><code>Oversold</code>: RSI level (e.g., 30) that blocks selling (anticipating a bounce).</li>
+        <li><code>Period</code>: Lookback length for RSI calculation (Std: 14).</li>
+    </ul>
+
+    <h3>6. MA Trend Filter</h3>
+    <ul>
+        <li><code>Enable Filter</code>: If checked, the bot will <strong>Hard Block</strong> any buy if the price is below the Moving Average (MA).</li>
+        <li><code>Period</code>: The length of the MA (e.g., 20 or 50). Keeps you on the right side of the trend.</li>
+    </ul>
+
+    <h3>7. Volume Confirmation</h3>
+    <ul>
+        <li><code>Use Volume Check</code>: If checked, a buy signal is ignored unless recent volume is higher than the average.</li>
+        <li><code>Volume Timeframe</code>: The candle size used for this check (e.g., 1h).</li>
+        <li><code>Volume Period</code>: How many past candles to average for the "baseline" (e.g., 24).</li>
+        <li><code>Volume Multiplier</code>: How much higher the current volume must be (e.g., 1.5x average).</li>
+    </ul>
+
+    <h3>8. Risk & Portfolio</h3>
+    <ul>
+        <li><code>Max Positions</code>: Hard limit on how many different coins to hold at once.</li>
+        <li><code>Low Funds ($)</code>: Stop trading if cash drops below this amount (Reserve for gas/fees).</li>
+        <li><code>Max Invested %</code>: <strong>CRITICAL.</strong> The % of your total account allowed in crypto. (e.g., 0.8 = 80% invested, 20% cash).</li>
+        <li><code>Dip Buy ATR x</code>: How far price must drop below your last sell price to trigger a "Re-Buy" or Dip Buy.</li>
+        <li><code>Dip Buy Alloc %</code>: Fixed % of cash to use when "Buying the Dip" (Overrides standard sizing).</li>
+        <li><code>Min Trade ($)</code>: The smallest trade allowed. Prevents "dust" trades.</li>
+        <li><code>Bear Safety Lock</code>: <strong>The Anti-Crash Shield.</strong> If enabled, blocks buys when Market is Bearish + Trending.</li>
+        <li><code>Max 24h Pump</code>: Blocks buying any coin that is already up > X% today (Anti-FOMO).</li>
+    </ul>
+
+    <h3>9. Profit Management</h3>
+    <ul>
+        <li><code>Use Volatility Target</code>: If checked, calculates Take-Profit based on ATR (Dynamic).</li>
+        <li><code>Volatility Multiplier</code>: <code>Entry + (ATR * Multiplier)</code>. A higher multiplier targets a larger move.</li>
+        <li><code>Fixed Target %</code>: Fallback profit target if Volatility Target is disabled.</li>
+        <li><code>Enable Vault</code>: Activates Profit Sweeping.</li>
+        <li><code>Sweep Threshold</code>: If Cash > (Start Capital + Threshold), the bot moves the excess profit into <code>USDC</code> to "Lock it away."</li>
+    </ul>
+
+    <h3>10. ATR Stop-Loss</h3>
+    <ul>
+        <li><code>Period</code>: Lookback for Volatility calculation (Std: 14).</li>
+        <li><code>Timeframe</code>: Candle size for the Stop-Loss (e.g., 1h or 4h).</li>
+        <li><code>Multiplier</code>: <code>High Water Mark - (ATR * Multiplier)</code>. Controls how tight the stop is. 
+            <ul>
+                <li>Low (1.5) = Tight Stop (Safe, but frequent stops).</li>
+                <li>High (3.0) = Loose Stop (More room to breathe).</li>
+            </ul>
+        </li>
+        <li><code>Fallback %</code>: A fixed % stop-loss used only if ATR data is missing/broken.</li>
+    </ul>
+
+    <h3>11. Advanced Strategy Config</h3>
+    <ul>
+        <li><code>MTFA Weights</code>: The "Secret Sauce." These inputs determine how much weight is given to the 1m, 1h, 6h, and 1d timeframes.
+            <ul>
+                <li><strong>Trending Weights:</strong> Used when ADX is High (Follow the trend).</li>
+                <li><strong>Ranging Weights:</strong> Used when ADX is Low (Fade the moves).</li>
+            </ul>
+        </li>
+        <li><code>MACD Config</code>: Advanced tuning for the MACD indicator (Fast/Slow/Signal lengths).</li>
+    </ul>
+
+    <h3>12. Edit Raw JSON</h3>
+    <ul>
+        <li>Opens a modal with the raw text of <code>config.json</code>.</li>
+        <li>Useful for copying/pasting entire configs or sharing settings with others.</li>
+    </ul>
+
+    <h3>13. Edit Sizing Tiers</h3>
+    <ul>
+        <li>Controls position sizing based on signal strength.</li>
+        <li>Format: <code>[Score, Allocation]</code>.</li>
+        <li>Example: <code>[2.0, 0.5]</code> means "If Score >= 2.0, use 50% of available cash."</li>
+    </ul>
+
+    <h3>14. Reset Bot Data</h3>
+    <ul>
+        <li><strong>Soft Reset:</strong> Wipes trade history, P&L, and resets portfolio balance to $10,000 (or your setting). Does NOT delete your config.</li>
+        <li>Useful for restarting a "Season" or clearing out bad test data.</li>
+    </ul>
+
+    <h3>15. Live Trading</h3>
+    <ul>
+        <li><strong>Checkbox:</strong> The master safety switch.</li>
+        <li><strong>Unchecked:</strong> Ghost Mode (Paper Trading). Real data, fake money.</li>
+        <li><strong>Checked:</strong> Live Mode. Real money. Requires <code>coinbase_keys.json</code>.</li>
+        <li><em>Note: You must click "Save Config" and then "Start Bot" for the change to take effect.</em></li>
+    </ul>
+
+    <h2>5. Reading the Logs (The "Brain Dump")</h2>
+    <p>Every time the bot scans a coin, it prints a "Decision Block." Here is how to decode it line-by-line.</p>
+
+    <div class="highlight-box" style="font-family: 'Courier New', monospace; font-size: 0.85em; line-height: 1.4; background: #111; padding: 15px; border: 1px solid #444; color: #ccc; margin-bottom: 20px;">
+        [18:06:44] Analyzing DOGE/USD<br>
+        -> Current Price:   $0.1393 (5m: -0.03% / 24h: -0.88%)<br>
+        -> Market Regime:   <span class="positive">BULL</span> (Global) | <span class="negative">BEAR</span> (Local)<br>
+        -> Macro Context:   Struct: <span class="negative">BEAR</span> | Fund: 0.01%<br>
+        -> Active Strategy: <span class="positive">Trending</span> (ADX: 31.29)<br>
+        -> Volume Check:    <span class="negative">FAILED</span> (74M <= Tgt: 434M)<br>
+        -> Thresholds:      BUY > 1.65 | SELL < -10.00<br>
+        -> Score Calc:      MTFA(0.41) + MACD(-1.85) = <span class="negative">-1.443</span><br>
+        -> ACTION:          <span class="neutral">Idle</span>
+    </div>
+
+    <h3>Line-by-Line Decode</h3>
+    <ul>
+        <li>
+            <code>Analyzing [SYMBOL]</code>: 
+            <br>The timestamp and the specific coin currently being scanned.
+        </li>
+        <li>
+            <code>Current Price</code>: 
+            <br>The live price + recent volatility.
+            <br><em>(5m: -0.03%)</em> = Short-term momentum.
+            <br><em>(24h: -0.88%)</em> = Daily trend. If this is > 30%, the "Anti-Pump" lock might engage.
+        </li>
+        <li>
+            <code>Market Regime</code>: 
+            <br>The "Traffic Light" system.
+            <br><strong>Global (BTC):</strong> Determines if the market is safe (Bull) or dangerous (Bear).
+            <br><strong>Local (The Coin):</strong> Determines if this specific coin is strong or weak relative to its own history.
+        </li>
+        <li>
+            <code>Macro Context</code>: 
+            <br><strong>Struct:</strong> The Long-Term market structure (Weekly Trend). If <span class="negative">BEAR</span>, "Crypto Winter" rules are active (Harder to buy).
+            <br><strong>Fund:</strong> The Funding Rate. High positive numbers (e.g., 0.05%) mean the market is over-leveraged/greedy, which penalizes the score.
+        </li>
+        <li>
+            <code>Active Strategy</code>: 
+            <br>Which math engine is running?
+            <br><strong>Trending (High ADX):</strong> Looking for Breakouts.
+            <br><strong>Ranging (Low ADX):</strong> Looking to Buy Dips / Sell Rips.
+        </li>
+        <li>
+            <code>Volume Check</code>: 
+            <br>Is there enough money moving this coin to make it safe?
+            <br>If <span class="negative">FAILED</span>, the bot assumes the price move is "fake" and will block the trade.
+        </li>
+        <li>
+            <code>Thresholds</code>: 
+            <br>The "Goal Posts." The <strong>Score Calc</strong> must be higher than <code>BUY</code> or lower than <code>SELL</code> to trigger an action. These numbers change dynamically based on market mood.
+        </li>
+        <li>
+            <code>Score Calc</code>: 
+            <br>The final grade for the trade setup.
+            <br><strong>MTFA:</strong> The weighted price change across timeframes (Price Direction).
+            <br><strong>MACD:</strong> Momentum Bonus. Adds points if speeding up, subtracts if slowing down.
+        </li>
+        <li>
+            <code>ACTION</code>: 
+            <br>The final verdict. Common statuses:
+            <ul>
+                <li><span class="positive">BUY Signal:</span> All checks passed. Buying now.</li>
+                <li><span class="neutral">Idle:</span> No clear signal. Waiting.</li>
+                <li><span class="negative">Blocked (Bear Trend):</span> "Safety Lock" prevented a crash buy.</li>
+                <li><span class="negative">Blocked (Max Exp):</span> You are already fully invested.</li>
+                <li><span class="negative">Blocked (Low Vol):</span> Price moved, but volume didn't confirm it.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>6. Strategy Profile Switcher</h2>
+    <p>Located at the top right of the dashboard.</p>
+    <ul>
+        <li>Allows you to instantly hot-swap the bot's personality.</li>
+        <li><strong>Default:</strong> Balanced.</li>
+        <li><strong>Sniper:</strong> Extremely picky. Only buys perfect setups.</li>
+        <li><strong>Volatile (Degen):</strong> Looser stops, chases pumps.</li>
+        <li><strong>Safe (Scalper):</strong> Tighter stops, quick profits.</li>
+        <li><em>Note: Switching profiles overwrites your current <code>config.json</code> settings immediately.</em></li>
+    </ul>
+
+    <h2>7. Frequently Asked Questions (FAQ)</h2>
+
+    <h3>🤔 Strategy & Logic</h3>
+    
+    <details>
+        <summary><strong>Why is the bot "IDLE" when a coin is pumping +20%?</strong></summary>
+        <p>This is usually due to <strong>ADX Lag</strong>. The bot uses a 14-day average to determine if a coin is <span class="positive">Trending</span> or <span class="neutral">Ranging</span>.</p>
+        <p>If a coin has been flat for 13 days and explodes today, the mathematical average might still be low (e.g., ADX 18). The bot sees this as a "Ranging Market" and interprets the pump as a "Rip" (Selling opportunity), not a breakout. It will wait for the ADX to cross 20+ before chasing the trend.</p>
+    </details>
+
+    <details>
+        <summary><strong>What is the "Bear Safety Lock" and why is it blocking trades?</strong></summary>
+        <p>This is your primary defense against crashing markets. It engages when:</p>
+        <ul>
+            <li><strong>Global Regime (BTC):</strong> <span class="negative">BEAR</span> (Price < 50-Day SMA)</li>
+            <li><strong>Local Character (Coin):</strong> <span class="positive">TRENDING</span> (High ADX)</li>
+        </ul>
+        <p>A "Trending Bear" market is a <strong>Crash</strong>. The bot blocks all standard buys to prevent catching a falling knife. It will only buy if the <strong>Bear Bounce</strong> logic (RSI &lt; 25) triggers.</p>
+    </details>
+
+    <details>
+        <summary><strong>Why does the Scanner blacklist "MON/USD"?</strong></summary>
+        <p>Some coins listed in the API are "Zombies"—they exist in the market list but have broken data (e.g., missing High/Low prices). If the scanner tries to calculate volatility for these without data, it can crash the cycle. We blacklist them to keep the bot running smoothly.</p>
+    </details>
+
+    <details>
+        <summary><strong>Why is buying blocked by "Max Exp"?</strong></summary>
+        <p>This is the <strong>Max Invested %</strong> safety setting. If you set it to <code>0.6</code> (60%), and your current crypto holdings equal 60% or more of your total account value, the bot stops buying.</p>
+        <p>It forces you to keep a cash reserve ("Dry Powder") to prevent going All-In at a market top. To fix this, either sell some positions or raise the limit in the Config panel.</p>
+    </details>
+
+    <h3>💰 Money & Fees</h3>
+
+    <details>
+        <summary><strong>Why is my P&L negative immediately after buying?</strong></summary>
+        <p>This is the <strong>"Fee Tax."</strong> Coinbase charges a Taker Fee (approx. 0.6%) to buy and another 0.6% to sell.</p>
+        <p>The moment you buy, you are mathematically down <strong>-1.2%</strong>. The price must rise by 1.2% just to break even. The bot's P&L display accounts for this reality so you don't have false confidence.</p>
+    </details>
+
+    <details>
+        <summary><strong>Why did the bot sell so quickly after buying?</strong></summary>
+        <p>This is often a <strong>Volatility Squeeze</strong>. If your Stop-Loss is too tight (e.g., 1.5% drop) and your fees are high (1.2%), the asset only needs to drop 0.3% to trigger a "Loss Prevention" exit.</p>
+        <p><em>Solution:</em> Increase your <code>atr_stop_loss_config</code> multiplier to give the trade room to breathe.</p>
+    </details>
+
+    <h3>⚙️ Technical & System</h3>
+
+    <details>
+        <summary><strong>How do I backup my bot?</strong></summary>
+        <p>To preserve your full history, settings, and profiles, save these files:</p>
+        <ul>
+            <li><code>portfolio.json</code> (Current balance and open positions)</li>
+            <li><code>trades.db</code> (Complete historical trade log)</li>
+            <li><code>pnl_history.csv</code> (Data for the P&L Chart)</li>
+            <li><code>config.json</code> (Your currently active settings)</li>
+            <li><code>config_*.json</code> (All your Strategy Profiles like safe, sniper, etc.)</li>
+        </ul>
+    </details>
+
+    <details>
+        <summary><strong>What happens if I close the web page?</strong></summary>
+        <p><strong>Nothing!</strong> The bot continues running in the background on your Raspberry Pi (via <code>tmux</code>).</p>
+        <p>You can close the browser, turn off your laptop, or go on vacation. As long as the Raspberry Pi has power and internet, the bot keeps trading. To actually stop the bot, you must click the <code class="negative">Stop Bot</code> button in the dashboard or use the SSH terminal.</p>
+    </details>
+
+    <details>
+        <summary><strong>Do I need to restart the bot after changing settings?</strong></summary>
+        <p><strong>No.</strong> The bot is designed to "Hot Reload" your settings.</p>
+        <p>When you click "Save Config", the new values are written to disk immediately. The bot will pick up these changes automatically at the start of the <strong>next trading cycle</strong>.</p>
+        <p><em>Note: You will see a <code>📝 Config Saved</code> confirmation in the logs when this happens.</em></p>
+    </details>
+
+</body>
+</html>

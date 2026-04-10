@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bot Control Panel</title>
+    <link rel="icon" href="../static/favicon.ico">
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    
+    <div id="logSidebar">
+    
+    <div id="sidebarTrigger" onclick="toggleSidebar()">
+        <span id="triggerIcon" style="color:#888; font-weight:bold; font-family:sans-serif;">&gt;</span>
+    </div>
+
+        <div id="sidebarResizeHandle"></div>
+        <div id="native-terminal" style="width: 100%; height: 100%; background: #0b0c10; color: #cccccc; font-family: 'Courier New', Courier, monospace; overflow-y: auto; padding: 15px; box-sizing: border-box; white-space: pre-wrap; font-size: 13px; line-height: 1.4;">
+            CryptoPi Native Terminal Initialized...
+        </div>
+    </div>
+
+    <div id="mainContent">
+        <div class="container">
+            
+            <div class="sidebar">
+                
+                <div class="panel-header">
+                    <h2>Config Panel</h2>
+                    
+                    <div class="header-controls">
+                        
+                        <div class="theme-wrapper">
+                            <select id="theme-selector" class="select-input">
+                                <option value="default">🌙 Dark</option>
+                                <option value="light">☀️ Light</option>
+                                <option value="terminal">📟 Terminal</option>
+                                <option value="gamer">🎮 Gamer RGB</option> </select>
+                        </div>
+
+                        <div class="header-buttons">
+                            <button id="btn-changelog" class="btn-teal btn-sm">Change Log</button>
+                            <button id="btn-help" class="btn-pink btn-sm">Help</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="config-form">
+                    
+                    <details open>
+                        <summary>Bot Operation</summary>
+                        <div class="form-content form-grid"> 
+                            
+                            <div class="form-row">
+                                <label for="warmup_enabled" title="If enabled, the bot will run in 'warm-up' mode for a few cycles.">Enable Warm-Up:</label>
+                                <input type="checkbox" id="warmup_enabled">
+                            </div>
+                            <div class="form-row">
+                                <label for="warmup_cycles" title="During warm-up, all new BUY orders are disabled, but sells/stops are active.">Warm-Up Cycles:</label>
+                                <input type="number" id="warmup_cycles">
+                            </div>
+                            <div class="form-row">
+                                <label for="check_trending" title="How often (in seconds) the bot runs a cycle in a TRENDING market.">Trending Interval:</label>
+                                <input type="number" id="check_trending">
+                            </div>
+                            <div class="form-row">
+                                <label for="check_ranging" title="How often (in seconds) the bot runs a cycle in a RANGING market.">Ranging Interval:</label>
+                                <input type="number" id="check_ranging">
+                            </div>
+                        </div>
+                    </details>
+
+                    <details open>
+                        <summary>Market Analysis</summary>
+                        <div class="form-content form-grid">
+                            <div class="form-row">
+                                <label for="dyn_enabled" title="Enable to scan for top movers. Disable to use the static 'symbol_list' in your config.">Scan Top Movers:</label>
+                                <input type="checkbox" id="dyn_enabled">
+                            </div>
+                            <div class="form-row">
+                                <label for="dyn_top_n" title="How many of the top performing coins to scan each cycle.">Top N Symbols:</label>
+                                <input type="number" id="dyn_top_n">
+                            </div>
+                            <div class="form-row">
+                                <label for="adx_period" title="Lookback window (days) for calculating trend strength. 14 is standard.">ADX Period:</label>
+                                <input type="number" id="adx_period">
+                            </div>
+                            <div class="form-row">
+                                <label for="adx_threshold" title="ADX value above which the bot uses a 'Trending' strategy. Below this, it uses 'Ranging'.">ADX Threshold:</label>
+                                <input type="number" id="adx_threshold">
+                            </div>
+                            <div class="form-row">
+                                <label for="dyn_mode" title="GAINERS: Scans for highest 24h % change (Chasing pumps). VOLATILITY: Scans for high Volatility + Volume (Catching early moves).">Scanner Mode:</label>
+                                <select id="dyn_mode">
+                                    <option value="GAINERS">Top Gainers (24h %)</option>
+                                    <option value="VOLATILITY">Smart Volatility</option>
+                                </select>
+                            </div>
+                            <div class="blacklist-container">
+                                <label for="dyn_blacklist" class="blacklist-label">
+                                    🚫 Blacklisted Symbols (Comma Separated):
+                                </label>
+                                
+                                <textarea id="dyn_blacklist" rows="3" 
+                                        class="blacklist-textarea"
+                                        placeholder="MON/USD, GYEN/USD, USDT/USD"></textarea>
+                                        
+                                <div class="helper-text">
+                                    <em>Coins listed here will be ignored by the Smart Scanner.</em>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details open>
+                        <summary>Core Strategy & Thresholds</summary>
+                        <div class="form-content form-grid">
+                            <div class="form-row">
+                                <label for="neutral_buy" title="Base score needed to trigger a buy in a neutral market.">Neutral Buy:</label>
+                                <input type="number" step="0.01" id="neutral_buy">
+                            </div>
+                            <div class="form-row">
+                                <label for="neutral_sell" title="Base score needed to trigger a sell in a neutral market.">Neutral Sell:</label>
+                                <input type="number" step="0.01" id="neutral_sell">
+                            </div>
+                            <div class="form-row">
+                                <label for="bull_bear_mod" title="Adjusts thresholds based on market regime. Subtracted in Bull markets (easier buys), added in Bear markets (harder buys).">Bull/Bear Mod:</label>
+                                <input type="number" step="0.01" id="bull_bear_mod">
+                            </div>
+                            <div class="form-row">
+                                <label for="macd_score_weight" title="Weight of the MACD signal in the final score (Std: 0.5).">MACD Weight:</label>
+                                <input type="number" step="0.1" id="macd_score_weight">
+                            </div>
+                            
+                        </div>
+                    </details>
+ 
+                    <details>
+                        <summary>Strategy Toggles & Extras</summary>
+                        <div class="form-content form-grid">
+                            <div class="form-row">
+                                <label for="scarcity_enabled" title="If enabled, sells are restricted during Bull runs (Scarcity Mode).">Scarcity Mode:</label>
+                                <input type="checkbox" id="scarcity_enabled">
+                            </div>
+                            <div class="form-row">
+                                <label for="scaling_enabled" title="Allow buying more of a coin you already hold (DCA).">Allow Scaling In:</label>
+                                <input type="checkbox" id="scaling_enabled">
+                            </div>
+                            <div class="form-row">
+                                <label for="funding_enabled" title="Enable Funding Rate monitor (Greed Penalty / Fear Boost).">Funding Monitor:</label>
+                                <input type="checkbox" id="funding_enabled">
+                            </div>
+                             <div class="form-row">
+                                <label for="vol_scoring_enabled" title="Enable Volume Scoring (Pump Boost / Dump Penalty).">Vol Scoring:</label>
+                                <input type="checkbox" id="vol_scoring_enabled">
+                            </div>
+                             <div class="form-row">
+                                <label for="regime_index" title="Symbol used to determine Global Market Regime (e.g. BTC/USD).">Regime Index:</label>
+                                <input type="text" id="regime_index" style="width: 80px;">
+                            </div>
+                        </div>
+                    </details>                    
+                    
+                    <details>
+                        <summary>RSI Settings</summary>
+                        <div class="form-content form-grid">
+                            <div class="form-row">
+                                <label for="rsi_overbought" title="RSI > this blocks buys (Std: 70).">Overbought:</label>
+                                <input type="number" id="rsi_overbought">
+                            </div>
+                            <div class="form-row">
+                                <label for="rsi_oversold" title="RSI < this blocks sells (Std: 30).">Oversold:</label>
+                                <input type="number" id="rsi_oversold">
+                            </div>
+                            <div class="form-row">
+                                <label for="rsi_period" title="RSI lookback period (Std: 14).">Period:</label>
+                                <input type="number" id="rsi_period">
+                            </div>
+                        </div>
+                    </details>
+
+                    <details>
+                    <summary>MA Trend Filter</summary>
+                    <div class="form-content form-grid">
+                        <div class="form-row">
+                            <label for="ma_filter_enabled" title="If enabled, BUYs are blocked if price is below this short-term MA.">Enable Filter:</label>
+                            <input type="checkbox" id="ma_filter_enabled">
+                        </div>
+                        <div class="form-row">
+                            <label for="ma_filter_period" title="Lookback period for the filter (Std: 20).">Period:</label>
+                            <input type="number" id="ma_filter_period">
+                        </div>
+                    </div>
+                    </details>
+                    
+                    <details>
+                        <summary>Volume Confirmation</summary>
+                        <div class="form-content form-grid">
+                            <div class="form-row">
+                                <label for="vol_enabled" title="If enabled, signals will be blocked if not supported by high volume.">Use Volume Check:</label>
+                                <input type="checkbox" id="vol_enabled">
+                            </div>
+                            <div class="form-row">
+                                <label for="vol_tf" title="Timeframe for volume calculation (e.g., '5m' or '1h').">Volume Timeframe:</label>
+                                <select id="vol_tf">
+                                    <option value="1m">1m</option>
+                                    <option value="5m">5m</option>
+                                    <option value="15m">15m</option>
+                                    <option value="1h">1h</option>
+                                    <option value="6h">6h</option>
+                                    <option value="1d">1d</option>
+                                </select>   
+                            </div>                        
+                            <div class="form-row">
+                                <label for="vol_period" title="Lookback period for calculating MEDIAN volume.">Volume Period:</label>
+                                <input type="number" id="vol_period">
+                            </div>
+                            <div class="form-row">
+                                <label for="vol_mult" title="Signal volume must be > (MEDIAN Volume * Multiplier) to pass.">Volume Multiplier:</label>
+                                <input type="number" step="0.1" id="vol_mult">
+                            </div>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Risk & Portfolio</summary>
+                        <div class="form-content form-grid">
+                            <div class="form-row">
+                                <label for="max_pos" title="Max number of different assets to hold at once.">Max Positions:</label>
+                                <input type="number" id="max_pos">
+                            </div>
+                            <div class="form-row">
+                                <label for="low_funds" title="Prevents new buys if cash balance is below this $.">Low Funds ($):</label>
+                                <input type="number" id="low_funds">
+                            </div>
+                            <div class="form-row">
+                                <label title="Max % of total account allowed in crypto. e.g. 0.80 = 80% invested, 20% cash retained.">Max Invested % (0.1-1.0):</label>
+                                <input type="number" id="max_portfolio_exposure" step="0.05" min="0.1" max="1.0" value="1.0">
+                            </div>
+                            <div class="form-row">
+                                <label for="dip_buy_atr" title="Multiplier for dip-buy. Waits for price to drop (ATR * this) below sell price.">Dip Buy ATR x:</label>
+                                <input type="number" step="0.1" id="dip_buy_atr">
+                            </div>
+                            <div class="form-row">
+                                <label for="dip_buy_alloc" title="Fixed % of cash to use for a dip-buy (ignores sizing tiers).">Dip Buy Alloc %:</label>
+                                <input type="number" step="0.01" id="dip_buy_alloc">
+                            </div>
+                            <div class="form-row">
+                                <label for="min_trade_size" title="The minimum allowed trade size in $. Any buy signal that would use less than this will be blocked.">Min Trade ($):</label>
+                                <input type="number" id="min_trade_size">
+                            </div>
+                            <div class="form-row">
+                                <label for="bear_safety" title="If ENABLED: Blocks all buys when Market is Bearish AND Trending (High ADX). Prevents catching knives. If DISABLED: Allows buying momentum in Bear markets (High Risk).">Bear Safety Lock:</label>
+                                <input type="checkbox" id="bear_safety">
+                            </div>
+                            <div class="form-row">
+                                <label for="max_pump" title="Safety Filter: Blocks new BUYs if the coin is already up more than this % in 24h. Prevents FOMOing into tops.">Max 24h Pump (%):</label>
+                                <input type="number" id="max_pump" step="1">
+                            </div>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>Profit Management</summary>
+                        <div class="form-content form-grid">
+                            
+                            <div class="form-row">
+                                <label for="use_atr_tp" title="If enabled, the profit target scales with market volatility (ATR). High Volatility = Higher Target.">Use Volatility Target:</label>
+                                <input type="checkbox" id="use_atr_tp">
+                            </div>
+                            <div class="form-row">
+                                <label for="tp_atr_mult" title="Target Price = Entry + (Volatility * Multiplier). Standard Swing = 4.0 to 6.0.">Volatility Multiplier:</label>
+                                <input type="number" step="0.1" id="tp_atr_mult">
+                            </div>
+                            
+                            <div class="form-row">
+                                <label for="take_profit" title="Fixed % Target. Used ONLY if Volatility Target is disabled or data is missing.">Fixed Target %:</label>
+                                <input type="number" step="0.1" id="take_profit">
+                            </div>
+
+                            <div style="grid-column: 1 / -1; margin-top: 10px; border-top: 1px dashed #444; padding-top: 10px; color: #F1C40F; font-size: 0.9em;">
+                                <strong>🏦 Profit Vault (Auto-Sweep)</strong>
+                            </div>
+                            
+                            <div class="form-row">
+                                <label for="sweep_enabled" title="Automatically moves excess cash above your threshold into USDC to lock in gains.">Enable Vault:</label>
+                                <input type="checkbox" id="sweep_enabled">
+                            </div>
+                            <div class="form-row">
+                                <label for="sweep_threshold" title="Trigger Sweep when Cash > (Starting Capital + This Amount).">Sweep Threshold ($):</label>
+                                <input type="number" id="sweep_threshold">
+                            </div>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>ATR Stop-Loss</summary>
+                        <div class="form-content form-grid">
+                            <div class="form-row">
+                                <label for="atr_sl_period" title="Lookback period (candles) for ATR.">Period:</label>
+                                <input type="number" id="atr_sl_period">
+                            </div>
+                            <div class="form-row">
+                                <label for="atr_sl_tf" title="Timeframe for ATR calculation (e.g., '1h').">Timeframe:</label>
+                                <select id="atr_sl_tf">
+                                    <option value="1m">1m</option>
+                                    <option value="5m">5m</option>
+                                    <option value="15m">15m</option>
+                                    <option value="1h">1h</option>
+                                    <option value="4h">4h</option>
+                                    <option value="1d">1d</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <label for="atr_sl_mult" title="Stop Price = Peak Price - (ATR * Multiplier). Higher = looser stop.">Multiplier:</label>
+                                <input type="number" step="0.1" id="atr_sl_mult">
+                            </div>
+                            <div class="form-row">
+                                <label for="atr_sl_fallback" title="Fallback stop-loss % if ATR fails to calculate (e.g., -5.0).">Fallback %:</label>
+                                <input type="number" step="0.1" id="atr_sl_fallback">
+                            </div>  
+                        </div>
+                    </details>
+                    
+                    <details>
+                        <summary>Advanced Strategy Config</summary>
+                            <div class="form-content">
+                                <div class="form-grid-weights">
+                                    <label style="grid-column: 1 / 5; font-weight: bold; color: #eee;" title="Multi-Timeframe Analysis: Calculates a base score by multiplying the price change of each timeframe by a set weight.">MTFA Weights</label>
+                                    <span></span><label title="Settings used when the market is in a strong trend (ADX > threshold).">Trending:</label><span></span><label title="Settings used when the market is sideways or choppy (ADX < threshold).">Ranging:</label>
+                                    
+                                    <label for="tw_trend_1m">1m:</label>
+                                    <input type="number" step="0.1" id="tw_trend_1m" title="Weight for the 1-minute price change during a Trending market.">
+                                    <label for="tw_range_1m">1m:</label>
+                                    <input type="number" step="0.1" id="tw_range_1m" title="Weight for the 1-minute price change during a Ranging market.">
+                                    
+                                    <label for="tw_trend_1h">1h:</label>
+                                    <input type="number" step="0.1" id="tw_trend_1h" title="Weight for the 1-hour price change during a Trending market.">
+                                    <label for="tw_range_1h">1h:</label>
+                                    <input type="number" step="0.1" id="tw_range_1h" title="Weight for the 1-hour price change during a Ranging market.">
+                                    
+                                    <label for="tw_trend_6h">6h:</label>
+                                    <input type="number" step="0.1" id="tw_trend_6h" title="Weight for the 6-hour price change during a Trending market.">
+                                    <label for="tw_range_6h">6h:</label>
+                                    <input type="number" step="0.1" id="tw_range_6h" title="Weight for the 6-hour price change during a Ranging market.">
+                                    
+                                    <label for="tw_trend_1d">1d:</label>
+                                    <input type="number" step="0.1" id="tw_trend_1d" title="Weight for the 1-day price change during a Trending market.">
+                                    <label for="tw_range_1d">1d:</label>
+                                    <input type="number" step="0.1" id="tw_range_1d" title="Weight for the 1-day price change during a Ranging market.">
+                                </div>
+                                
+                                <div class="form-grid-weights" style="margin-top: 15px;">
+                                    <label style="grid-column: 1 / 5; font-weight: bold; color: #eee;" title="Moving Average Convergence Divergence: A momentum indicator. The bot uses the MACD Histogram trend to confirm signal strength.">MACD Config</label>
+                                    
+                                    <label for="macd_tf" title="Candle timeframe used for MACD calculation (e.g., '1h').">Timeframe:</label>
+                                    <input type="text" id="macd_tf" title="Candle timeframe used for MACD calculation (e.g., '1h').">
+                                    <label for="macd_signal" title="Lookback period for the Signal Line (the EMA of the MACD line). Standard is 9.">Signal:</label>
+                                    <input type="number" id="macd_signal" title="Lookback period for the Signal Line (the EMA of the MACD line). Standard is 9.">
+                                    
+                                    <label for="macd_fast" title="Lookback period for the 'fast' Exponential Moving Average (EMA). Standard is 12.">Fast:</label>
+                                    <input type="number" id="macd_fast" title="Lookback period for the 'fast' Exponential Moving Average (EMA). Standard is 12.">
+                                    <label for="macd_slow" title="Lookback period for the 'slow' Exponential Moving Average (EMA). Standard is 26.">Slow:</label>
+                                    <input type="number" id="macd_slow" title="Lookback period for the 'slow' Exponential MovingAverage (EMA). Standard is 26.">
+                                </div>
+
+                            
+                            <div class="form-grid" style="margin-top: 15px;">
+                                <div class="form-row">
+                                    <button type="button" id="btn-view-json" class="btn-orange">Edit RAW JSON...</button>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <button type="button" id="btn-edit-tiers" class="btn-orange">Edit Sizing Tiers...</button>
+                                </div>
+                                <div class="form-row">
+                                    <button type="button" id="btn-reset-bot" style="background-color: #c0392b; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; font-weight: bold; width: 100%;">
+                                        ⚠ Reset Bot Data...</button>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>Trading Controls</summary>
+                        
+                        <div class="live-trading-row">
+                            <div class="form-row">
+                                <label for="live_trading" class="live-trading-label" title="Stop the Bot, Check the box, Save Config, Start the Bot">
+                                    ⚠ ENABLE LIVE TRADING
+                                </label>
+                                
+                                <input type="checkbox" id="live_trading">
+                            </div>
+                            
+                            <span class="live-warning-text">
+                                WARNING: This will execute real trades with real money. Keep this unticked to run the bot in Ghost Mode (paper trading).
+                            </span>
+                        </div>
+
+                        <div class="form-content">
+                            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 15px 0; opacity: 0.3;">
+
+                            <div class="form-row">
+                                <label for="accumulator_mode" class="live-trading-label" style="color: var(--accent-info, #4a9eff); border-color: var(--accent-info, #4a9eff);" title="Bot will BUY but NEVER SELL automatically">
+                                    🛡️ ACCUMULATOR MODE
+                                </label>
+                                
+                                <input type="checkbox" id="accumulator_mode"> 
+                            </div>
+
+                            <span class="live-warning-text" style="color: var(--text-muted, #888);">
+                                <strong>HODL Strategy:</strong> Buying logic remains active, but all automatic <strong>SELL</strong> signals are blocked. Watch the Heat Badge for manual sell opportunities. This is DCA for long term holding and best used in Bear markets.
+                            </span>
+                        </div>
+                    </details>
+                </form>
+                
+                <div class="control-grid">
+                    <button id="btn-start" class="btn-green">▶ Start</button>
+                    <button id="btn-stop" class="btn-red">⏹ Stop</button>
+                    <button id="btn-save" class="btn-blue">Save Config</button>
+                    <button id="btn-portfolio" class="btn-purple">📈 Portfolio</button>
+                    <button id="btn-audit" class="btn-magenta">🔍 Audit</button> 
+                </div>
+                
+                <div id="event-log-container" class="log-height-calc">
+                    <div id="event-log-content">
+                        <div class="disclaimer">
+                            <strong class="disclaimer-header legal">
+                                ⚠️ LEGAL DISCLAIMER &amp; LIABILITY WAIVER
+                            </strong>
+                            
+                            <p class="disclaimer-text">
+                                This software is provided strictly for <strong>educational, evaluation, and simulation purposes</strong>. It is NOT a financial advisory service, and nothing herein constitutes investment advice or a recommendation to buy or sell any asset.
+                            </p>
+                            
+                            <p class="disclaimer-text">
+                                Cryptocurrency trading involves <strong>substantial risk of loss</strong>. This software is provided "AS IS", without warranty of any kind, express or implied. By using this software, you acknowledge and agree that the creators assume <strong>NO LIABILITY</strong> for financial losses, damages, or unintended trades resulting from software bugs, market volatility, or API failures. <strong>You are solely responsible for your own capital and trading decisions.</strong>
+                            </p>
+
+                            <p class="disclaimer-text">
+                                <strong>NON-CUSTODIAL & SECURITY NOTICE:</strong> While this software utilizes API keys with 'Trade Only' permissions, you acknowledge that sharing API keys involves inherent security risks. You agree that the creators are not liable for any security breaches, server compromises, or unauthorized use of API keys resulting from third-party attacks.
+                            </p>
+                            
+                            <strong class="disclaimer-header operation">
+                                🚀 OPERATION SEQUENCE:
+                            </strong>
+                            <ol class="disclaimer-list">
+                                <li>Select a <strong>Strategy Profile</strong> (or stick to Default).</li>
+                                <li>Adjust parameters if needed and click <strong>'Save Config'</strong>.</li>
+                                <li><em>Optional:</em> Check "Enable Live Trading" (Config) to use real funds.</li>
+                                <li>Click <strong>'Start Bot'</strong> to initialize the engine.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>          
+            <div class="dashboard-area"> 
+                <div class="status-header">
+                    <div class="status-title-group" style="margin-bottom: 15px;">
+                    <h2 id="liveText" class="live-text mode-offline">System Offline</h2>
+                </div>
+
+                    <div class="profile-wrapper">
+                        <label class="input-label">Strategy Profile:</label>                      
+                        
+                        <select id="profile-selector" class="select-input">
+                            <option value="" disabled selected>-- Select Mode --</option>
+                            <option value="default">✅ Standard Default</option>
+                            <option value="safe">🛡️ Safe (Scalper)</option>
+                            <option value="scarcity">💎 Scarcity (Trend)</option>
+                            <option value="volatile">🚀 Volatile (Degen)</option>
+                            <option value="sniper">🎯 Sniper</option>
+                            <option value="turbo">🏎️ Turbo</option>
+                            <option value="tester">🧪 Tester</option>
+                        </select>
+                    </div>
+                </div> 
+            
+            <div id="global-status">
+                
+                <div class="status-column">
+                    <div class="status-item">
+                    <span class="status-label">Open Positions / Capital</span>
+                    <div>
+                        <span class="status-value" id="status-positions-value">$0.00</span>
+                        <span style="color: #666; font-weight: normal; margin: 0 5px;">/</span>
+                        <span class="status-value" id="status-cash">$0.00</span>
+                    </div>
+                </div>
+                    <div class="status-item" style="margin-top: 10px;">
+                        <span class="status-label" style="color:#F1C40F;">Profit Vault</span><br>
+                        <span class="status-value" id="status-vault" style="color:#F1C40F;">$0.00</span>
+                    </div>
+                    <div class="status-item" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
+                        <span class="status-label">Total Equity (P&L)</span><br>
+                        <span class="status-value" id="status-total-pnl">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="status-column">
+                    <div class="status-item">
+                        <span class="status-label">Market Regime</span><br>
+                        <span class="status-value status-regime-char" id="status-regime-char">-- / --</span>
+                    </div>
+                    <div class="status-item" style="margin-top: 10px;">
+                        <span class="status-label">Trend Breadth</span><br>
+                        <span class="status-value" id="status-character-adx">-- / --</span>
+                    </div>
+                    <div class="status-item" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
+                        <span class="status-label">Buy / Sell Thresholds</span><br>
+                        <span class="status-value" id="status-thresholds">-- / --</span>
+                    </div>
+                </div>
+
+                <div class="status-column">
+                    <div class="status-item">
+                        <span class="status-label">Trading Status</span><br>
+                        <span class="status-value" id="status-live">--</span>
+                    </div>
+                    <div class="status-item" style="margin-top: 10px;">
+                        <span class="status-label">Next Cycle</span><br>
+                        <span class="status-value" id="status-warmup-countdown">-- / --</span>
+                    </div>
+                    <div class="status-item" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
+                        <span class="status-label">Current Action</span><br>
+                        <span class="status-value" id="status-action">Idle</span>
+                    </div>
+                </div>
+            </div>
+            <div id="dashboard-grid">
+            </div>
+            </div> 
+        
+        <div id="json-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit config.json</h2>
+                    <span id="json-modal-close" class="close-btn">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <textarea id="raw-json-output"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-save-raw-json" style="background: #2ECC71; color: white; margin-right: 10px;">Save Changes</button>
+                    <button id="json-modal-close-2" style="background: #aaa;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-reset-bot" class="modal">
+            <div class="modal-content" style="background-color: #222; margin: 10% auto; padding: 20px; border: 1px solid #444; width: 80%; max-width: 500px; border-radius: 8px; color: #eee;">
+                <span class="close-reset" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+                
+                <h2 style="border-bottom: 1px solid #c0392b; padding-bottom: 10px; color: #e74c3c;">⚠ Reset Bot Data</h2>
+                
+                <p style="line-height: 1.5; color: #ccc;">
+                    This action will wipe your trading history and reset your portfolio balance. The bot process should be stopped before running this.<br>
+                    <span style="color: #2ECC71; font-weight: bold;">📦 An automatic backup will be created in /archives before deletion.</span>
+                </p>
+
+                <div style="background: #333; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #f39c12;">
+                    <h3 style="margin-top: 0; color: #f39c12;">Soft Reset (Recommended)</h3>
+                    <ul style="font-size: 0.9em; color: #ccc; padding-left: 20px; margin-bottom: 15px;">
+                        <li>Resets Portfolio to <strong>$10,000 USD</strong></li>
+                        <li>Wipes <strong>Trade History</strong> (Win Rate resets to 0%)</li>
+                        <li>Wipes <strong>P&L Chart</strong></li>
+                        <li>✅ <strong>KEEPS</strong> your Config & Strategies</li>
+                        <li>✅ <strong>SAVES</strong> a snapshot to <code>archives/</code></li>
+                    </ul>
+                    <button id="btn-confirm-soft" style="width: 100%; padding: 10px; background: #f39c12; color: #222; border: none; font-weight: bold; cursor: pointer; border-radius: 4px;">PERFORM SOFT RESET</button>
+                </div>
+
+                <div style="background: #333; padding: 15px; border-radius: 5px; border-left: 4px solid #c0392b; opacity: 0.6;">
+                    <h3 style="margin-top: 0; color: #c0392b;">Hard Reset (Factory Wipe)</h3>
+                    <p style="font-size: 0.8em;">(Disabled for safety. Enable in admin_utils.py)</p>
+                    <button disabled style="width: 100%; padding: 10px; background: #555; color: #888; border: none; font-weight: bold; cursor: not-allowed; border-radius: 4px;">HARD RESET</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="sizing-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Sizing Tiers</h2>
+                <span id="sizing-modal-close" class="close-btn">&times;</span>
+            </div>
+
+            <div style="color: #ccc; font-size: 0.9em; margin-bottom: 15px; border-bottom: 1px dashed #444; padding-bottom: 15px;">
+                <p style="margin: 0;">This determines how much cash to use for a BUY signal. The bot checks the signal's score against the 'Score &ge;' column, finds the <strong>highest tier</strong> that it meets, and allocates the corresponding 'Allocation %' of your available cash.</p>
+                <p style="margin: 5px 0 0 0;">(A 'dip-buy' score of 999 will always use the highest tier).</p>
+            </div>
+            <div class="modal-body">
+                <div class="tier-row" style="font-weight: bold;">
+                    <span>Score &ge;</span>
+                    <span>Allocation %</span>
+                    <span></span>
+                </div>
+                <div id="sizing-tiers-editor">
+                </div>
+                <button id="btn-add-tier" style="margin-top: 10px; background: #2ECC71; color: #fff;">+ Add Tier</button>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save-tiers" class="btn-green">Save Tiers</button>
+                <button id="sizing-modal-close-2" class="btn-grey">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="audit-modal" class="modal">
+        <div class="modal-content" style="width: 90%; max-width: 800px;">
+            <span class="close-btn" onclick="document.getElementById('audit-modal').style.display='none'">&times;</span>
+            <h2 style="margin-top:0;">🚀 FOMO Detector Report</h2>
+            <div id="audit-loading">⏳ Running Audit... Please wait. This may take 5-10 seconds...</div>
+            <div id="audit-content"></div>
+        </div>
+    </div> 
+    
+    <div id="analysis-modal" class="modal">
+        <div class="modal-content" style="width: 500px;">
+            
+            <div class="modal-header">
+                <h2 id="modal-analysis-symbol">Analysis Details</h2>
+                <span id="analysis-modal-close" class="close-btn">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <pre id="modal-analysis-content" class="analysis-log-container"></pre>
+                
+                <pre id="modal-risk-content" style="display: none;"></pre>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="analysis-modal-close-2" class="btn btn-grey">Close</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <div id="advisor-modal" class="modal">
+        <div class="modal-content" style="width: 450px;"> <div class="modal-header">
+                <h2 id="advisor-title">Market Advisor</h2>
+                <span class="close-btn" onclick="closeAdvisorModal()">&times;</span>
+            </div>
+
+            <div class="modal-body" style="text-align: center;">
+                <p id="advisor-subtitle" style="color: #888; font-size: 0.9em; margin-bottom: 20px;">
+                    Accumulator Mode Strategy
+                </p>
+
+                <div id="advisor-gauge-box" class="gauge-box">
+                    <div id="advisor-gauge-value" class="gauge-value">0</div>
+                    <div id="advisor-gauge-label" class="gauge-label">NEUTRAL</div>
+                    <p id="advisor-description" style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;">
+                        Calculating...
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-footer" id="advisor-actions">
+                </div>
+
+        </div>
+    </div>
+
+    </div>
+
+        <script>
+        // --- 1. GLOBAL SCOPE VARIABLES & FUNCTIONS ---
+        // These must be global so the HTML 'onclick' attributes can see them.
+
+        let currentBotStatus = {}; 
+        let currentConfig = {}; // [FIX] Now Global
+        let jsonModal, rawJsonOutput, sizingModal, sizingTiersEditor, analysisModal;
+
+        function formatPrice(price) {
+            // [FIX] Force input to float
+            const p = parseFloat(price);
+            
+            if (isNaN(p)) return "0.00";
+            
+            if (p >= 1.0) { return p.toFixed(2); }
+            else if (p >= 0.01) { return p.toFixed(4); }
+            else { return p.toFixed(6); }
+        }
+                
+        function toggleSidebar() {
+            const sidebar = document.getElementById("logSidebar");
+            const trigger = document.getElementById("sidebarTrigger"); // Get the trigger
+            const icon = document.getElementById("triggerIcon");
+            const body = document.body;
+
+            sidebar.classList.toggle("active");
+            trigger.classList.toggle("active"); // <--- ADD THIS LINE
+            body.classList.toggle("sidebar-open");
+
+            // Icon logic...
+            if (sidebar.classList.contains("active")) {
+                icon.innerHTML = "&lt;";
+                icon.style.color = "#fff";
+            } else {
+                icon.innerHTML = "&gt;";
+                icon.style.color = "#888";
+            }
+        }
+
+        // --- SIDEBAR RESIZE LOGIC ---
+        (function() {
+            const sidebar = document.getElementById('logSidebar');
+            const handle = document.getElementById('sidebarResizeHandle');
+            const trigger = document.getElementById('sidebarTrigger');
+            let dragging = false;
+
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                handle.classList.add('active');
+                sidebar.classList.add('is-dragging');
+                trigger.classList.add('is-dragging');
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!dragging) return;
+                const newWidth = Math.max(300, Math.min(e.clientX, window.innerWidth * 0.8));
+                document.documentElement.style.setProperty('--log-width', newWidth + 'px');
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (!dragging) return;
+                dragging = false;
+                handle.classList.remove('active');
+                sidebar.classList.remove('is-dragging');
+                trigger.classList.remove('is-dragging');
+            });
+        })();
+
+        const spanReset = document.getElementsByClassName("close-reset")[0];
+            if (spanReset) {
+                spanReset.onclick = function() {
+                    document.getElementById('modal-reset').style.display = 'none';
+                }
+            }
+
+        // Close Modal
+        spanReset.onclick = function() {
+            resetModal.style.display = "none";
+        }
+
+        // Handle Soft Reset Click
+        document.getElementById("btn-confirm-soft").onclick = async function() {
+            if(!confirm("Are you sure? This will wipe your P&L history and reset balance to $10,000.")) return;
+            
+            // Show loading state
+            const btn = this;
+            btn.textContent = "RESETTING...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/reset_bot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: 'soft' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    alert("✅ Reset Complete. The page will now reload.");
+                    window.location.reload();
+                } else {
+                    alert("❌ Error: " + data.message);
+                    btn.textContent = "PERFORM SOFT RESET";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert("❌ Request Failed. Check console.");
+                btn.textContent = "PERFORM SOFT RESET";
+                btn.disabled = false;
+            }
+        }
+
+        // Close modal if clicking outside
+        window.onclick = function(event) {
+            if (event.target == resetModal) {
+                resetModal.style.display = "none";
+            }
+           
+        }
+
+        function liquidateAsset(symbol) {
+            if (!confirm(`⚠️ EMERGENCY SELL: ${symbol}\n\nAre you sure you want to market sell 100% of this position immediately?`)) {
+                return;
+            }
+
+            // Replace slash with dash for URL safety if needed
+            const safeSymbol = symbol.replace('/', '-');
+
+            fetch(`/api/liquidate/${safeSymbol}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert("✅ SUCCESS: " + data.message);
+                        updateDashboard(); // Refresh UI immediately
+                    } else {
+                        alert("❌ ERROR: " + data.message);
+                    }
+                })
+                .catch(err => alert("Network Error: " + err));
+        }
+
+        function formatLargeNumber(num) {
+            // [FIX] Force input to a float, because Python sends it as a string
+            const n = parseFloat(num);
+            
+            // Handle invalid data cleanly
+            if (isNaN(n)) return "0";
+
+            if (n >= 1000000000) { return (n / 1000000000).toFixed(2) + 'B'; }
+            if (n >= 1000000) { return (n / 1000000).toFixed(2) + 'M'; }
+            if (n >= 1000) { return (n / 1000).toFixed(2) + 'K'; }
+            
+            return n.toFixed(0);
+        }
+
+        // ---Audit Function ---
+        async function runAudit() {
+            const modal = document.getElementById('audit-modal');
+            const content = document.getElementById('audit-content');
+            const loading = document.getElementById('audit-loading');
+            
+            // Show Modal & Loading State
+            modal.style.display = 'flex';
+            content.innerHTML = ''; // Clear previous
+            loading.style.display = 'block';
+            
+            try {
+                const res = await fetch('/api/run_audit');
+                const data = await res.json();
+                
+                loading.style.display = 'none';
+                
+                if (data.status === 'success') {
+                    // Insert the HTML report we generated in Python
+                    content.innerHTML = data.report;
+                } else {
+                    content.textContent = "Error running audit: " + data.message;
+                }
+            } catch (e) {
+                loading.style.display = 'none';
+                content.textContent = "Network Error: " + e;
+            }
+        }
+        
+        // Close modal if user clicks outside of it
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('audit-modal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
+        // Function called when the "View Analysis" button is clicked
+        function openAnalysisModal(symbol) {
+            const info = currentBotStatus.symbols[symbol];
+            if (!info) return;
+
+            document.getElementById('modal-analysis-symbol').textContent = `${symbol} Analysis Log`;
+
+            const global = currentBotStatus.global || {};
+            const details = info.details || {};
+            
+            // --- UPDATED: Helper for CSS Classes (Not Hex Codes) ---
+            const color = (text, type) => {
+                // Maps 'green' -> 'log-green', 'red' -> 'log-red', etc.
+                // If type is missing/unknown, it defaults to 'log-default'
+                const validTypes = ['green', 'red', 'yellow', 'blue'];
+                const cssClass = validTypes.includes(type) ? `log-${type}` : 'log-default';
+                return `<span class="${cssClass}">${text}</span>`;
+            };
+
+            // --- MASTER LOG BUILDER ---
+            
+            // 1. Setup Data
+            const strat = info.strategy || "Unknown"; 
+            const price = parseFloat(info.price || 0);
+            const chg5m = parseFloat(info.change_5m || 0);
+            const chg24h = parseFloat(info.change_24h || 0);
+            
+            // Hybrid Regime Logic
+            const globalReg = (currentBotStatus.global.market_regime || "N/A").toUpperCase();
+            const localReg = (info.local_regime || globalReg).toUpperCase();
+            const localSma = parseFloat(info.local_sma || 0);
+            
+            let regimeStr = globalReg;
+            if (globalReg !== localReg) {
+                regimeStr += ` (Local: ${localReg} @ $${formatPrice(localSma)})`;
+            } else {
+                regimeStr += ` (50d: $${formatPrice(localSma)})`;
+            }
+            
+            // 2. Header & Context
+            let logHtml = `[Latest Scan] Analyzing ${symbol}\n`;
+            logHtml += ` -> Current Price:    $${formatPrice(price)} (5m: ${chg5m.toFixed(2)}% / 24h: ${chg24h.toFixed(2)}%)\n`;
+            logHtml += ` -> Market Regime:    ${regimeStr}\n`;
+            
+            // ADX Logic
+            const adxVal = details.adx !== undefined ? parseFloat(details.adx) : 0;
+            const adxThresh = currentConfig.adx_trending_threshold || 25; 
+            const adxColor = adxVal > adxThresh ? 'green' : 'red';
+            const adxDisplay = details.adx !== undefined ? color(adxVal.toFixed(2), adxColor) : "N/A";
+
+            logHtml += ` -> Active Strategy: ${color(strat, 'blue')} (ADX: ${adxDisplay})\n`;
+
+            // 3. Filters
+            const volPass = details.vol_check === "PASSED";
+            const volVal = parseFloat(details.latest_vol || 0);
+            const tgtVal = parseFloat(details.target_vol || 0);
+            const volSign = volPass ? ">" : "<=";
+            const volColor = volPass ? 'green' : 'red';
+            logHtml += ` -> Volume Check:     ${color(details.vol_check, volColor)} (${formatLargeNumber(volVal)} ${volSign} Tgt: ${formatLargeNumber(tgtVal)})\n`;
+
+            const maVal = parseFloat(info.ma_value || 0);
+            if (maVal > 0) {
+                const maPass = price > maVal;
+                const maSign = maPass ? ">" : "<";
+                const maRes = maPass ? "PASSED" : "BLOCKED";
+                const maColor = maPass ? 'green' : 'red';
+                logHtml += ` -> MA Filter:        ${color(maRes, maColor)} (Price $${formatPrice(price)} ${maSign} MA $${formatPrice(maVal)})\n`;
+            }
+
+            const rsi = parseFloat(info.rsi || 0);
+            logHtml += ` -> RSI (1h):         ${rsi.toFixed(2)}\n`;
+
+            // 4. Risk Management
+            if (details.atr_stop) {
+                logHtml += ` -> ATR Stop Target: < $${formatPrice(details.atr_stop)}\n`;
+                logHtml += ` -> ATR Take-Profit: > $${formatPrice(details.atr_tp)}\n`;
+            } else if (details.fixed_stop) {
+                logHtml += ` -> Fixed Stop:       < $${formatPrice(details.fixed_stop)}\n`;
+                logHtml += ` -> Fixed TP:         > $${formatPrice(details.fixed_tp)}\n`;
+            }
+
+            // 5. Scoring
+            const buyThresh = currentBotStatus.global.buy_thresh || 0;
+            const sellThresh = currentBotStatus.global.sell_thresh || 0;
+            logHtml += ` -> Thresholds:       BUY > ${buyThresh.toFixed(2)} | SELL < ${sellThresh.toFixed(2)}\n`;
+
+            const totalScore = parseFloat(info.score || 0);
+            const macdScore = parseFloat(details.macd_score || 0);
+            const mtfaScore = totalScore - macdScore;
+            const scoreColor = totalScore > 0 ? 'green' : 'red';
+
+            if (Math.abs(totalScore - 999) < 1) {
+                logHtml += ` -> Score:            999 (Forced Dip Buy)\n`;
+            } else {
+                logHtml += ` -> Score Calc:       MTFA(${mtfaScore.toFixed(2)}) + MACD(${macdScore.toFixed(2)}) = ${color(totalScore.toFixed(3), scoreColor)}\n`;
+            }
+
+            // 6. Action
+            const status = info.status || "Idle";
+            let statusColor = 'gray'; // This will map to .log-default
+            if (status.includes("BUY") || status.includes("TAKE")) statusColor = 'green';
+            else if (status.includes("SELL") || status.includes("STOP")) statusColor = 'red';
+            else if (status.includes("Blocked") || status.includes("Error")) statusColor = 'yellow';
+            
+            logHtml += ` -> ACTION:           ${color(status.toUpperCase(), statusColor)}`;
+
+            // Inject content
+            const contentBox = document.getElementById('modal-analysis-content');
+            contentBox.className = 'analysis-log-container'; // Apply the CSS class here!
+            contentBox.innerHTML = logHtml;
+            
+            // Hide unused sections
+            document.getElementById('modal-risk-content').style.display = 'none';
+            document.getElementById('modal-risk-content').innerHTML = '';
+            
+            document.getElementById('analysis-modal').style.display = 'flex';
+        }
+
+        // --- ADVISOR MODAL FUNCTIONS ---
+
+        // --- ADVISOR MODAL FUNCTIONS ---
+
+        function openAdvisorModal(symbol, score, isHeld) {
+            const modal = document.getElementById('advisor-modal');
+            const title = document.getElementById('advisor-title');
+            
+            // Elements
+            const gaugeBox = document.getElementById('advisor-gauge-box');
+            const gaugeVal = document.getElementById('advisor-gauge-value');
+            const gaugeLabel = document.getElementById('advisor-gauge-label');
+            const desc = document.getElementById('advisor-description');
+            const actions = document.getElementById('advisor-actions');
+
+            // 1. Set Title
+            title.innerText = `${symbol} Insight`;
+
+            // 2. Determine State
+            // Reset basic classes
+            gaugeBox.className = 'gauge-box'; 
+
+            let labelText = 'DEEP FREEZE';
+            let explanation = "Momentum is low. Buying dips is safe. <strong>HODL</strong> is recommended.";
+            let stateClass = 'state-cold';
+
+            if (score > 75) {
+                stateClass = 'state-hot';
+                labelText = 'OVERHEATED';
+                explanation = "RSI & Momentum peaking. Correction likely. Consider <strong>Taking Profits</strong>.";
+            } else if (score > 35) {
+                stateClass = 'state-warm';
+                labelText = 'BUILDING';
+                explanation = "Trend is active. Market is healthy. <strong>Hold</strong> and monitor.";
+            }
+
+            // Apply State
+            gaugeBox.classList.add(stateClass);
+            gaugeVal.innerText = score;
+            gaugeLabel.innerText = labelText;
+            desc.innerHTML = explanation;
+
+            // 3. Inject Buttons into Footer
+            if (isHeld) {
+                actions.innerHTML = `
+                    <button onclick="liquidateAsset('${symbol}'); closeAdvisorModal();" class="btn btn-red" style="flex-grow:1;">
+                        💣 Force Sell (100%)
+                    </button>
+                    <button onclick="closeAdvisorModal()" class="btn btn-grey">Close</button>
+                `;
+            } else {
+                actions.innerHTML = `
+                    <button onclick="closeAdvisorModal()" class="btn btn-grey" style="width: 100%;">Close</button>
+                `;
+            }
+
+            modal.style.display = 'flex'; // Flex to center, matching your CSS
+        }
+
+        function closeAdvisorModal() {
+            document.getElementById('advisor-modal').style.display = 'none';
+        }
+
+        // Ensure clicking outside closes it (Standard behavior)
+        window.onclick = function(event) {
+            const modal = document.getElementById('advisor-modal');
+            if (event.target == modal) {
+                closeAdvisorModal();
+            }
+        }
+    
+        // --- 2. MAIN APPLICATION LOGIC (Waits for HTML to load) ---
+        document.addEventListener('DOMContentLoaded', function() {
+                // --- THEME SWITCHER LOGIC ---
+            const themeSelector = document.getElementById('theme-selector');
+            const htmlRoot = document.documentElement;
+
+            // 1. Load saved theme from local storage
+            const savedTheme = localStorage.getItem('app_theme') || 'default';
+            if (savedTheme !== 'default') {
+                htmlRoot.setAttribute('data-theme', savedTheme);
+            }
+            
+            if (themeSelector) {
+                themeSelector.value = savedTheme;
+
+                // 2. Listen for changes
+                themeSelector.addEventListener('change', (e) => {
+                    const selectedTheme = e.target.value;
+                    
+                    // Apply to HTML tag
+                    if (selectedTheme === 'default') {
+                        htmlRoot.removeAttribute('data-theme');
+                    } else {
+                        htmlRoot.setAttribute('data-theme', selectedTheme);
+                    }
+                    
+                    // Save to storage
+                    localStorage.setItem('app_theme', selectedTheme);
+                });
+            }
+            const API_URL = "";
+
+            // --- NATIVE TERMINAL POLLER ---
+            const terminalDiv = document.getElementById('native-terminal');
+            async function fetchLogs() {
+                try {
+                    const response = await fetch(`${API_URL}/logs`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.logs && data.logs.length > 0) {
+                            data.logs.forEach(log => {
+                                // Use insertAdjacentHTML to safely render the color spans
+                                terminalDiv.insertAdjacentHTML('beforeend', log + '<br>');
+                            });
+                            // Auto-scroll to bottom
+                            terminalDiv.scrollTop = terminalDiv.scrollHeight;
+                        }
+                    }
+                } catch (e) {
+                    // Fail silently to prevent console spam
+                }
+            }
+            setInterval(fetchLogs, 1000); // Poll every second
+
+            // --- Assign Global References ---
+            jsonModal = document.getElementById('json-modal');
+            rawJsonOutput = document.getElementById('raw-json-output');
+            sizingModal = document.getElementById('sizing-modal');
+            sizingTiersEditor = document.getElementById('sizing-tiers-editor');
+            analysisModal = document.getElementById('analysis-modal');
+
+            // --- Local DOM Element References ---
+            const dashboardGrid = document.getElementById('dashboard-grid');
+            const statusRegimeChar = document.getElementById('status-regime-char');
+            const statusPositionsValue = document.getElementById('status-positions-value');
+            const statusTotalPnl = document.getElementById('status-total-pnl');
+            const statusCash = document.getElementById('status-cash');
+            const statusCountdown = document.getElementById('status-countdown');
+            const statusThresholds = document.getElementById('status-thresholds');
+            const statusLive = document.getElementById('status-live');
+            const statusCharacterAdx = document.getElementById('status-character-adx');
+            const statusWarmupCountdown = document.getElementById('status-warmup-countdown');
+            const statusAction = document.getElementById('status-action');
+            const eventLogContent = document.getElementById('event-log-content');
+            const statusVault = document.getElementById('status-vault');
+            let disclaimerElement = document.querySelector('#event-log-content .disclaimer');
+
+            // 1. Inputs Reference
+            const inputs = {
+                live_trading: document.getElementById('live_trading'),
+                bear_safety: document.getElementById('bear_safety'),
+                accumulator_mode: document.getElementById('accumulator_mode'),
+                
+                // Strategy Toggles
+                scarcity_enabled: document.getElementById('scarcity_enabled'),
+                scaling_enabled: document.getElementById('scaling_enabled'),
+                funding_enabled: document.getElementById('funding_enabled'),
+                vol_scoring_enabled: document.getElementById('vol_scoring_enabled'),
+                regime_index: document.getElementById('regime_index'),
+
+                // Dynamic Symbols
+                dyn_enabled: document.getElementById('dyn_enabled'),
+                dyn_mode: document.getElementById('dyn_mode'),
+                dyn_top_n: document.getElementById('dyn_top_n'),
+                dyn_blacklist: document.getElementById('dyn_blacklist'), // Moved here
+
+                // Risk & Portfolio
+                max_portfolio_exposure: document.getElementById('max_portfolio_exposure'), // Moved here
+                max_pos: document.getElementById('max_pos'),
+                max_pump: document.getElementById('max_pump'),
+                low_funds: document.getElementById('low_funds'),
+                min_trade_size: document.getElementById('min_trade_size'),
+                
+                // Intervals
+                check_trending: document.getElementById('check_trending'),
+                check_ranging: document.getElementById('check_ranging'),
+                
+                // Warmup
+                warmup_enabled: document.getElementById('warmup_enabled'),
+                warmup_cycles: document.getElementById('warmup_cycles'),
+                
+                // Core Strategy
+                adx_period: document.getElementById('adx_period'),
+                adx_threshold: document.getElementById('adx_threshold'),
+                neutral_buy: document.getElementById('neutral_buy'),
+                neutral_sell: document.getElementById('neutral_sell'),
+                bull_bear_mod: document.getElementById('bull_bear_mod'),
+                macd_score_weight: document.getElementById('macd_score_weight'),
+                
+                // RSI
+                rsi_period: document.getElementById('rsi_period'),
+                rsi_overbought: document.getElementById('rsi_overbought'),
+                rsi_oversold: document.getElementById('rsi_oversold'),
+                
+                // MA Filter
+                ma_filter_enabled: document.getElementById('ma_filter_enabled'),
+                ma_filter_period: document.getElementById('ma_filter_period'),
+                
+                // Volume Confirmation
+                vol_enabled: document.getElementById('vol_enabled'),
+                vol_tf: document.getElementById('vol_tf'),
+                vol_period: document.getElementById('vol_period'),
+                vol_mult: document.getElementById('vol_mult'),
+                
+                // Profit Management
+                take_profit: document.getElementById('take_profit'),
+                use_atr_tp: document.getElementById('use_atr_tp'),
+                tp_atr_mult: document.getElementById('tp_atr_mult'),
+                sweep_enabled: document.getElementById('sweep_enabled'),
+                sweep_threshold: document.getElementById('sweep_threshold'),
+                
+                // Dip & Stop Loss
+                dip_buy_atr: document.getElementById('dip_buy_atr'),
+                dip_buy_alloc: document.getElementById('dip_buy_alloc'),
+                atr_sl_period: document.getElementById('atr_sl_period'),
+                atr_sl_mult: document.getElementById('atr_sl_mult'),
+                atr_sl_tf: document.getElementById('atr_sl_tf'),
+                atr_sl_fallback: document.getElementById('atr_sl_fallback'),
+                
+                // Weights - Trending
+                tw_trend_1m: document.getElementById('tw_trend_1m'),
+                tw_trend_1h: document.getElementById('tw_trend_1h'),
+                tw_trend_6h: document.getElementById('tw_trend_6h'),
+                tw_trend_1d: document.getElementById('tw_trend_1d'),
+                
+                // Weights - Ranging
+                tw_range_1m: document.getElementById('tw_range_1m'),
+                tw_range_1h: document.getElementById('tw_range_1h'),
+                tw_range_6h: document.getElementById('tw_range_6h'),
+                tw_range_1d: document.getElementById('tw_range_1d'),
+                
+                // MACD Config
+                macd_tf: document.getElementById('macd_tf'),
+                macd_fast: document.getElementById('macd_fast'),
+                macd_slow: document.getElementById('macd_slow'),
+                macd_signal: document.getElementById('macd_signal')
+            };
+
+
+            // --- Helper & Navigation Functions ---
+            function openHelp() {
+                const width = 800; const height = 700;
+                const left = (window.screen.width / 2) - (width / 2);
+                const top = (window.screen.height / 2) - (height / 2);
+                window.open(`${API_URL}/help`, 'BotHelp', `width=${width},height=${height},top=${top},left=${left},scrollbars=yes`);
+            }
+
+            function openChangelog() {
+                const width = 800; const height = 700;
+                const left = (window.screen.width / 2) - (width / 2);
+                const top = (window.screen.height / 2) - (height / 2);
+                window.open(`${API_URL}/changelog`, 'BotChangelog', `width=${width},height=${height},top=${top},left=${left},scrollbars=yes`);
+            }
+            
+            function openPortfolio() {
+                // [UPDATED] Larger size
+                const width = 1300; 
+                const height = 900;
+
+                // Keep the nice centering math
+                const left = (window.screen.width / 2) - (width / 2);
+                const top = (window.screen.height / 2) - (height / 2);
+
+                // Use relative path '/portfolio' to avoid API_URL issues
+                window.open('/portfolio', 'BotPortfolio', `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,scrollbars=yes`);
+            }
+            
+            // --- Modal Logic ---
+            function openJsonModal() {
+                rawJsonOutput.value = JSON.stringify(currentConfig, null, 2);
+                jsonModal.style.display = 'flex';
+            }
+            function closeJsonModal() { jsonModal.style.display = 'none'; }
+            
+            function openSizingModal() { 
+                renderSizingTiers();
+                sizingModal.style.display = 'flex';
+            }
+            function closeSizingModal() { sizingModal.style.display = 'none'; }
+            
+            function renderSizingTiers() {
+                sizingTiersEditor.innerHTML = '';
+                const tiers = currentConfig.sizing_tiers || [];
+                tiers.sort((a, b) => a[0] - b[0]); 
+                tiers.forEach((tier, index) => {
+                    const row = document.createElement('div');
+                    row.className = 'tier-row';
+                    row.innerHTML = `
+                        <input type="number" class="tier-score" value="${tier[0]}">
+                        <input type="number" class="tier-alloc" value="${tier[1] * 100}">
+                        <button class="btn-delete-tier" data-index="${index}">&times;</button>
+                    `;
+                    sizingTiersEditor.appendChild(row);
+                });
+                sizingTiersEditor.querySelectorAll('.btn-delete-tier').forEach(btn => {
+                    btn.addEventListener('click', (e) => { e.target.parentElement.remove(); });
+                });
+            }
+            
+            function addSizingTierRow() {
+                const row = document.createElement('div');
+                row.className = 'tier-row';
+                row.innerHTML = `
+                    <input type="number" class="tier-score" placeholder="Score">
+                    <input type="number" class="tier-alloc" placeholder="Alloc %">
+                    <button class="btn-delete-tier">&times;</button>
+                `;
+                sizingTiersEditor.appendChild(row);
+                row.querySelector('.btn-delete-tier').addEventListener('click', (e) => {
+                    e.target.parentElement.remove();
+                });
+            }
+
+            // --- Core Config & Bot Control ---
+            async function loadConfig() {
+                try {
+                    const response = await fetch(`${API_URL}/config`);
+                    currentConfig = await response.json(); 
+                    const config = currentConfig;
+
+                    // Populate Inputs
+                    // SAFE LOAD: Only try to check the box if it actually exists in the HTML
+                    if (inputs.live_trading) {
+                        inputs.live_trading.checked = config.live_trading;
+                    }
+                    if (inputs.accumulator_mode) {
+                        inputs.accumulator_mode.checked = config.accumulator_mode || false;
+                    }
+                    inputs.bear_safety.checked = config.bear_trend_safety_lock !== undefined ? config.bear_trend_safety_lock : true;
+                    
+                    // Strategy Toggles
+                    inputs.scarcity_enabled.checked = config.scarcity_mode_enabled !== undefined ? config.scarcity_mode_enabled : true;
+                    inputs.scaling_enabled.checked = config.allow_scaling_in !== undefined ? config.allow_scaling_in : false;
+                    inputs.regime_index.value = config.market_regime_index || "BTC/USD";
+                    
+                    if (config.funding_monitor) {
+                         inputs.funding_enabled.checked = config.funding_monitor.enabled;
+                    }
+                    if (config.volume_scoring) {
+                         inputs.vol_scoring_enabled.checked = config.volume_scoring.enabled;
+                    }
+
+                    inputs.dyn_enabled.checked = config.dynamic_symbols_config.enabled;
+                    inputs.dyn_mode.value = config.dynamic_symbols_config.scanner_mode || "VOLATILITY";
+                    inputs.dyn_top_n.value = config.dynamic_symbols_config.top_n_symbols;
+                    
+                    const bl = config.dynamic_symbols_config.blacklist || [];
+                    inputs.dyn_blacklist.value = bl.join(', '); // CLEANER!
+                    
+                    inputs.max_portfolio_exposure.value = config.max_portfolio_exposure || 1.0; // CLEANER!
+                    
+                    inputs.check_trending.value = config.check_interval_seconds.trending;
+                    inputs.check_ranging.value = config.check_interval_seconds.ranging;
+                    inputs.warmup_enabled.checked = config.warmup_config.enabled;
+                    inputs.warmup_cycles.value = config.warmup_config.cycles;
+                    inputs.adx_period.value = config.adx_period;
+                    inputs.adx_threshold.value = config.adx_trending_threshold;
+                    inputs.neutral_buy.value = config.neutral_buy_threshold;
+                    inputs.neutral_sell.value = config.neutral_sell_threshold;
+                    inputs.bull_bear_mod.value = config.bull_bear_modifier;
+                    inputs.macd_score_weight.value = config.macd_score_weight;
+                    inputs.rsi_period.value = config.rsi_config.period;
+                    inputs.rsi_overbought.value = config.rsi_config.overbought;
+                    inputs.rsi_oversold.value = config.rsi_config.oversold;
+                    
+                    if (config.ma_filter_config) {
+                        inputs.ma_filter_enabled.checked = config.ma_filter_config.enabled;
+                        inputs.ma_filter_period.value = config.ma_filter_config.period;
+                    }
+                    
+                    if (config.volume_confirmation) {
+                        inputs.vol_enabled.checked = config.volume_confirmation.enabled;
+                        inputs.vol_tf.value = config.volume_confirmation.timeframe;
+                        inputs.vol_period.value = config.volume_confirmation.period;
+                        inputs.vol_mult.value = config.volume_confirmation.multiplier;
+                    }
+                    
+                    inputs.max_pos.value = config.max_open_positions;
+                    inputs.max_pump.value = config.max_24h_change_threshold || 30;
+                    inputs.low_funds.value = config.low_funds_threshold;
+                    inputs.min_trade_size.value = config.min_trade_size;
+                    inputs.take_profit.value = config.take_profit_percent;
+                    
+                    if (config.take_profit_config) {
+                        inputs.use_atr_tp.checked = config.take_profit_config.use_atr_take_profit;
+                        inputs.tp_atr_mult.value = config.take_profit_config.atr_multiplier;
+                    }
+
+                    if (config.profit_sweeping) {
+                        inputs.sweep_enabled.checked = config.profit_sweeping.enabled;
+                        inputs.sweep_threshold.value = config.profit_sweeping.sweep_threshold;
+                    }
+                    
+                    inputs.dip_buy_atr.value = config.dip_buy_atr_multiplier;
+                    inputs.dip_buy_alloc.value = config.dip_buy_allocation_percent * 100;
+                    inputs.atr_sl_period.value = config.atr_stop_loss_config.period;
+                    inputs.atr_sl_mult.value = config.atr_stop_loss_config.multiplier;
+                    inputs.atr_sl_tf.value = config.atr_stop_loss_config.timeframe;
+                    inputs.atr_sl_fallback.value = config.trailing_stop_loss_percent;
+
+                    inputs.tw_trend_1m.value = config.timeframe_weights_trending['1m'];
+                    inputs.tw_trend_1h.value = config.timeframe_weights_trending['1h'];
+                    inputs.tw_trend_6h.value = config.timeframe_weights_trending['6h'];
+                    inputs.tw_trend_1d.value = config.timeframe_weights_trending['1d'];
+                    inputs.tw_range_1m.value = config.timeframe_weights_ranging['1m'];
+                    inputs.tw_range_1h.value = config.timeframe_weights_ranging['1h'];
+                    inputs.tw_range_6h.value = config.timeframe_weights_ranging['6h'];
+                    inputs.tw_range_1d.value = config.timeframe_weights_ranging['1d'];
+                    inputs.macd_tf.value = config.macd_config.timeframe;
+                    inputs.macd_fast.value = config.macd_config.fast;
+                    inputs.macd_slow.value = config.macd_config.slow;
+                    inputs.macd_signal.value = config.macd_config.signal;
+
+                } catch (e) {
+                    console.error("Failed to load config:", e);
+                }
+            }
+
+            async function saveConfig() {
+                try {
+                    if (inputs.live_trading.checked) {
+                        if (!confirm("--- LIVE TRADING WARNING ---\n\nYou are about to enable LIVE TRADING. The bot will use REAL MONEY.\n\nAre you absolutely sure you want to do this?")) {
+                            inputs.live_trading.checked = false; 
+                            return; 
+                        }
+                    }
+                    let finalConfig = currentConfig; 
+
+                    finalConfig.live_trading = inputs.live_trading.checked;
+                    if (inputs.accumulator_mode) {
+                    finalConfig.accumulator_mode = inputs.accumulator_mode.checked;
+                    } else {
+                        finalConfig.accumulator_mode = false;
+                    }
+                    finalConfig.bear_trend_safety_lock = inputs.bear_safety.checked;
+                    
+                    // New Strategy Toggles (Clean References)
+                    finalConfig.scarcity_mode_enabled = inputs.scarcity_enabled.checked;
+                    finalConfig.allow_scaling_in = inputs.scaling_enabled.checked;
+                    finalConfig.market_regime_index = inputs.regime_index.value;
+                    
+                    if (!finalConfig.funding_monitor) finalConfig.funding_monitor = {};
+                    finalConfig.funding_monitor.enabled = inputs.funding_enabled.checked;
+
+                    if (!finalConfig.volume_scoring) finalConfig.volume_scoring = {};
+                    finalConfig.volume_scoring.enabled = inputs.vol_scoring_enabled.checked;
+                    
+                    finalConfig.dynamic_symbols_config.enabled = inputs.dyn_enabled.checked;
+                    finalConfig.dynamic_symbols_config.scanner_mode = inputs.dyn_mode.value;
+                    finalConfig.dynamic_symbols_config.top_n_symbols = parseInt(inputs.dyn_top_n.value);
+                    
+                    const blString = inputs.dyn_blacklist.value; // CLEANER!
+                    finalConfig.dynamic_symbols_config.blacklist = blString.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                    
+                    finalConfig.check_interval_seconds.trending = parseInt(inputs.check_trending.value);
+                    finalConfig.check_interval_seconds.ranging = parseInt(inputs.check_ranging.value);
+                    finalConfig.warmup_config.enabled = inputs.warmup_enabled.checked;
+                    finalConfig.warmup_config.cycles = parseInt(inputs.warmup_cycles.value);
+                    finalConfig.adx_period = parseInt(inputs.adx_period.value);
+                    finalConfig.adx_trending_threshold = parseFloat(inputs.adx_threshold.value);
+                    finalConfig.neutral_buy_threshold = parseFloat(inputs.neutral_buy.value);
+                    finalConfig.neutral_sell_threshold = parseFloat(inputs.neutral_sell.value);
+                    finalConfig.bull_bear_modifier = parseFloat(inputs.bull_bear_mod.value);
+                    finalConfig.macd_score_weight = parseFloat(inputs.macd_score_weight.value);
+                    finalConfig.rsi_config.period = parseInt(inputs.rsi_period.value);
+                    finalConfig.rsi_config.overbought = parseInt(inputs.rsi_overbought.value);
+                    finalConfig.rsi_config.oversold = parseInt(inputs.rsi_oversold.value);
+                    
+                    finalConfig.ma_filter_config = {
+                        enabled: inputs.ma_filter_enabled.checked,
+                        period: parseInt(inputs.ma_filter_period.value),
+                        timeframe: '1h' 
+                    };
+
+                    finalConfig.profit_sweeping = {
+                        enabled: inputs.sweep_enabled.checked,
+                        asset_to_buy: "USDC/USD",
+                        sweep_threshold: parseFloat(inputs.sweep_threshold.value),
+                        keep_buffer: 0.0
+                    };
+
+                    finalConfig.volume_confirmation.enabled = inputs.vol_enabled.checked;
+                    finalConfig.volume_confirmation.timeframe = inputs.vol_tf.value;
+                    finalConfig.volume_confirmation.period = parseInt(inputs.vol_period.value);
+                    finalConfig.volume_confirmation.multiplier = parseFloat(inputs.vol_mult.value);
+                    finalConfig.max_open_positions = parseInt(inputs.max_pos.value);
+                    finalConfig.max_24h_change_threshold = parseFloat(inputs.max_pump.value);
+                    finalConfig.low_funds_threshold = parseFloat(inputs.low_funds.value);
+                    
+                    finalConfig.max_portfolio_exposure = parseFloat(inputs.max_portfolio_exposure.value); // CLEANER!
+                    
+                    finalConfig.min_trade_size = parseFloat(inputs.min_trade_size.value);
+                    finalConfig.take_profit_percent = parseFloat(inputs.take_profit.value);
+                    finalConfig.take_profit_config.use_atr_take_profit = inputs.use_atr_tp.checked;
+                    finalConfig.take_profit_config.atr_multiplier = parseFloat(inputs.tp_atr_mult.value);
+                    finalConfig.dip_buy_atr_multiplier = parseFloat(inputs.dip_buy_atr.value);
+                    finalConfig.dip_buy_allocation_percent = parseFloat(inputs.dip_buy_alloc.value) / 100.0;
+                    finalConfig.atr_stop_loss_config.period = parseInt(inputs.atr_sl_period.value);
+                    finalConfig.atr_stop_loss_config.multiplier = parseFloat(inputs.atr_sl_mult.value);
+                    finalConfig.atr_stop_loss_config.timeframe = inputs.atr_sl_tf.value;
+                    finalConfig.trailing_stop_loss_percent = parseFloat(inputs.atr_sl_fallback.value);
+
+                    finalConfig.timeframe_weights_trending = {
+                        '1m': parseFloat(inputs.tw_trend_1m.value),
+                        '1h': parseFloat(inputs.tw_trend_1h.value),
+                        '6h': parseFloat(inputs.tw_trend_6h.value),
+                        '1d': parseFloat(inputs.tw_trend_1d.value)
+                    };
+                    finalConfig.timeframe_weights_ranging = {
+                        '1m': parseFloat(inputs.tw_range_1m.value),
+                        '1h': parseFloat(inputs.tw_range_1h.value),
+                        '6h': parseFloat(inputs.tw_range_6h.value),
+                        '1d': parseFloat(inputs.tw_range_1d.value)
+                    };
+                    finalConfig.macd_config = {
+                        timeframe: inputs.macd_tf.value,
+                        fast: parseInt(inputs.macd_fast.value),
+                        slow: parseInt(inputs.macd_slow.value),
+                        signal: parseInt(inputs.macd_signal.value)
+                    };
+                    
+                    finalConfig.sizing_tiers = currentConfig.sizing_tiers;
+                    
+                    const saveResponse = await fetch(`${API_URL}/config`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(finalConfig, null, 2)
+                    });
+                    
+                    if (saveResponse.ok) { 
+                        alert("Config saved!"); 
+                        currentConfig = finalConfig; 
+                    } else {
+                        const result = await saveResponse.json();
+                        alert(`Error: ${result.message}`); 
+                    }
+
+                } catch (e) {
+                    console.error("Failed to save config:", e);
+                    alert(`Failed to save config: ${e}`);
+                }
+            }
+            
+            async function saveRawJson() {
+                const rawText = document.getElementById('raw-json-output').value;
+                
+                // 1. Client-Side Validation
+                let parsedData;
+                try {
+                    parsedData = JSON.parse(rawText);
+                } catch (e) {
+                    alert("❌ Invalid JSON!\n\nPlease check your syntax (commas, brackets, quotes).\n\nError: " + e.message);
+                    return; // Stop processing
+                }
+
+                // 2. Send to Server
+                try {
+                    console.log("Saving raw JSON config...");
+                    const response = await fetch(`${API_URL}/config`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(parsedData, null, 2) // Re-stringify to ensure clean formatting
+                    });
+
+                    if (response.ok) {
+                        alert("✅ Config Updated Successfully!");
+                        closeJsonModal();
+                        // 3. Refresh UI inputs to match the new JSON
+                        await loadConfig(); 
+                    } else {
+                        const result = await response.json();
+                        alert(`Error saving config: ${result.message}`);
+                    }
+                } catch (e) {
+                    console.error("Failed to save raw config:", e);
+                    alert(`Failed to save config: ${e}`);
+                }
+            }
+
+            async function saveSizingTiers() {
+                const newTiers = [];
+                const tierRows = sizingTiersEditor.querySelectorAll('.tier-row');
+                try {
+                    tierRows.forEach(row => {
+                        const score = parseFloat(row.querySelector('.tier-score').value);
+                        const alloc = parseFloat(row.querySelector('.tier-alloc').value);
+                        if (!isNaN(score) && !isNaN(alloc)) {
+                            newTiers.push([score, alloc / 100.0]);
+                        }
+                    });
+                    currentConfig.sizing_tiers = newTiers.sort((a, b) => b[0] - a[0]); 
+                    await saveConfig(); 
+                    closeSizingModal(); 
+                } catch (e) {
+                    alert(`Error parsing tiers: ${e}`);
+                }
+            }
+
+            async function startBot() {
+                try {
+                    const response = await fetch(`${API_URL}/start`, { method: 'POST' });
+                    if (!response.ok) { const result = await response.json(); alert(`Error: ${result.message}`); }
+                } catch (e) { console.error("Failed to start bot:", e); }
+            }
+            async function stopBot() {
+                try {
+                    const response = await fetch(`${API_URL}/stop`, { method: 'POST' });
+                    if (!response.ok) { const result = await response.json(); alert(`Error: ${result.message}`); }
+                } catch (e) { console.error("Failed to stop bot:", e); }
+            }
+
+            async function updateDashboard() {
+            try {
+                const response = await fetch(`${API_URL}/status`);
+                
+                if (!response.ok) {
+                    console.error("Server returned non-OK status:", response.status);
+                    return;
+                }
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    console.error("JSON PARSE CRITICAL FAIL. Skipping update.", jsonError.message);
+                    return; 
+                }
+
+                currentBotStatus = data; 
+                const global = data.global;
+
+                // --- 1. COLUMN 1: Financial Calculations ---
+                const total_portfolio_value = global.portfolio_value || 0.0;
+                const cash = global.cash || 0.0;
+                const startingCapital = currentConfig.starting_capital || 10000.0;
+                const vault = global.vault_value || 0.0;
+                const open_position_value = total_portfolio_value - cash - vault;
+                const total_portfolio_pnl = total_portfolio_value - startingCapital;
+
+                let pnlClass = total_portfolio_pnl >= 0 ? 'positive' : 'negative';
+                let pnlSign = total_portfolio_pnl >= 0 ? '+' : '';
+
+                if(statusPositionsValue) statusPositionsValue.textContent = `$${open_position_value.toFixed(2)}`;
+                if(statusCash) statusCash.textContent = `$${cash.toFixed(2)}`;
+                
+                const statusVaultElement = document.getElementById('status-vault'); 
+                if (statusVaultElement) statusVaultElement.textContent = `$${vault.toFixed(2)}`;
+
+                if(statusTotalPnl) statusTotalPnl.innerHTML = `<span class="${pnlClass}">${pnlSign}$${total_portfolio_pnl.toFixed(2)}</span>`;
+
+                // --- 2. COLUMN 2: Strategy & Market State ---
+                const regime = global.market_regime || 'Neutral';
+                const globalChar = global.market_character || 'Ranging';
+                const regimeString = `${globalChar.toUpperCase()} ${regime.toUpperCase()}`;
+                
+                if(statusRegimeChar) {
+                    statusRegimeChar.textContent = regimeString;
+                    statusRegimeChar.className = 'status-value status-regime-char'; 
+                    if (regime.toUpperCase() === 'BULL') statusRegimeChar.classList.add('positive');
+                    else if (regime.toUpperCase() === 'BEAR') statusRegimeChar.classList.add('negative');
+                    else statusRegimeChar.classList.add('neutral');
+                }
+
+                const breadth = global.character || "Initializing...";
+                if(statusCharacterAdx) statusCharacterAdx.textContent = breadth;
+                
+                const buy_thresh = global.buy_thresh || 0.0;
+                const sell_thresh = global.sell_thresh || 0.0;
+                if(statusThresholds) statusThresholds.textContent = `${buy_thresh.toFixed(2)} / ${sell_thresh.toFixed(2)}`;
+
+
+                // --- 3. COLUMN 3: Control & Timing ---
+                const globalState = data.global || {}; 
+                const countdown = globalState.countdown || 0;
+                const warmup_status = globalState.warmup_status || "N/A";
+                const is_running = globalState.is_running || false;
+
+                // [HEADER & SYSTEM STATE LOGIC]
+                const liveTextHeader = document.getElementById('liveText');
+                const body = document.body;
+
+                // 1. Reset Global Theme
+                body.classList.remove('accumulator-active');
+
+                // 2. Logic
+                if (liveTextHeader) {
+                    // Reset base class
+                    liveTextHeader.className = 'live-text';
+
+                    if (!is_running) {
+                        // --- STATE: OFF ---
+                        liveTextHeader.textContent = "System Offline";
+                        liveTextHeader.classList.add('mode-offline'); // Grey, no glow
+                        
+                    } else {
+                        // --- STATE: ON (Running) ---
+                        
+                        if (currentConfig.accumulator_mode) {
+                            // --- SUB-STATE: ACCUMULATOR (Blue Glow) ---
+                            liveTextHeader.textContent = "🛡️ Accumulator Active";
+                            liveTextHeader.classList.add('mode-accumulator');
+                            
+                            // Apply Blue Theme to Body
+                            body.classList.add('accumulator-active');
+
+                        } else {
+                            // --- SUB-STATE: STANDARD (Green Glow) ---
+                            liveTextHeader.textContent = "✅ System Online";
+                            liveTextHeader.classList.add('mode-running');
+                        }
+                    }
+                }
+
+                // [GRID STATUS LOGIC]
+                const statusLive = document.getElementById('status-live'); 
+                if (statusLive) {
+                    if (is_running) {
+                        if (currentConfig && currentConfig.live_trading === false) {
+                            statusLive.textContent = "GHOST MODE";
+                            statusLive.className = "status-value neutral"; 
+                        } else {
+                            statusLive.textContent = "⚡LIVE MODE⚡"; 
+                            statusLive.className = "status-value status-text-live"; 
+                        }
+                    } else {
+                        statusLive.textContent = "STOPPED";
+                        statusLive.className = "status-value"; 
+                    }
+                }
+                
+                // Countdown Display
+                let countdownDisplay;
+                if (warmup_status.includes("WARM-UP")) {
+                    let suffix = countdown > 0 ? `(${countdown}s)` : '(Analyzing)';
+                    countdownDisplay = `${warmup_status} ${suffix}`;
+                } else if (countdown > 0) {
+                    countdownDisplay = `${countdown}s`;
+                } else {
+                    countdownDisplay = 'ANALYZING';
+                }
+                if(statusWarmupCountdown) statusWarmupCountdown.textContent = countdownDisplay;
+                
+                // Current Action slot
+                if (statusAction) {
+                    if (!is_running) {
+                        statusAction.textContent = 'BOT STOPPED';
+                        statusAction.className = 'status-value negative';
+                    } else if (countdown === 0) {
+                        statusAction.textContent = 'ANALYZING';
+                        statusAction.className = 'status-value loading-ellipsis neutral';
+                    } else if (warmup_status.includes("WARM-UP")) {
+                        statusAction.textContent = 'WARM-UP ACTIVE';
+                        statusAction.className = 'status-value neutral';
+                    } else {
+                        statusAction.textContent = 'TRADING IDLE';
+                        statusAction.className = 'status-value positive';
+                    }
+                }
+
+                // [SYMBOL CARDS LOGIC]
+                const dashboardGrid = document.getElementById('dashboard-grid');
+                if (dashboardGrid) {
+                    dashboardGrid.innerHTML = ''; 
+                    const symbols = Object.keys(data.symbols).sort();
+                    const heldSymbols = symbols.filter(symbol => data.symbols[symbol].is_held === true);
+                    const idleSymbols = symbols.filter(symbol => data.symbols[symbol].is_held === false);
+                    const sortedSymbols = [...heldSymbols, ...idleSymbols]; 
+                    
+                    const vol_tf = currentConfig.volume_confirmation ? currentConfig.volume_confirmation.timeframe : '1h';
+
+                    for (const symbol of sortedSymbols) {
+                        const info = data.symbols[symbol];
+                        
+                        // 1. Status & Class Logic
+                        let status = info.status || 'Idle';
+                        if (info.is_held && status === 'Idle') {
+                            status = "Position Held";
+                        }
+
+                        const price = info.price || 0.0;
+                        const change_5m = info.change_5m || 0.0;
+                        const pnl = info.pnl || 0.0;
+                        const entry = info.entry || 0.0;
+                        const score = info.score || 0.0;
+                        const rsi = info.rsi || 0.0;
+                        const change_24h = info.change_24h || 0.0;
+                        let change24Class = change_24h > 0 ? 'positive' : (change_24h < 0 ? 'negative' : 'neutral');
+                        
+                        const details = info.details || {};
+                        const latest_vol = parseFloat(details.latest_vol || 0);
+                        const median_vol = parseFloat(details.median_vol || 0);
+                        const target_vol = details.target_vol ? parseFloat(details.target_vol) : median_vol;
+                        const volLabel = details.target_vol ? "Tgt" : "Med";
+                        const volBenchmark = details.target_vol ? target_vol : median_vol;
+                        const adxVal = parseFloat(details.adx || 0);
+                        const adxThresh = currentConfig.adx_trending_threshold || 25;
+                        const adxClass = adxVal > adxThresh ? 'positive' : 'negative';
+                        const ma_config = currentConfig.ma_filter_config || {};
+                        const ma_filter_enabled = ma_config.enabled;
+                        const ma_period = ma_config.period;
+                        const ma_value = info.ma_value || 0.0;
+                        
+                        let pnlClass = pnl > 0 ? 'positive' : (pnl < 0 ? 'negative' : 'neutral');
+                        let changeClass = change_5m > 0 ? 'positive' : (change_5m < 0 ? 'negative' : 'neutral');
+                        let statusClass = (status.includes('BUY') || status.includes('TAKE-PROFIT') || status.includes('Position Held')) ? 'positive' : (status.includes('SELL') || status.includes('STOP')) ? 'negative' : 'neutral';
+                        
+                        let volClass = 'neutral';
+                        if (latest_vol > volBenchmark) volClass = 'positive';
+                        else if (volBenchmark > 0) volClass = 'negative';
+                        
+                        let maClass = 'neutral';
+                        if (ma_filter_enabled) {
+                            maClass = price > ma_value ? 'positive' : 'negative';
+                        }
+
+                        const coinbaseUrl = `https://www.coinbase.com/advanced-trade/spot/${symbol.replace('/', '-')}`;
+
+                        // --- 2. LOGIC BLOCKS ---
+
+                        // 1. Heat Badge Logic (Modified for Held Status)
+                        let heatBadgeHTML = "";
+                        let logicBtnHTML = `<button onclick="openAnalysisModal('${symbol}')" class="btn btn-logic" style="flex-grow: 1;">Logic</button>`;
+                        
+                        if (currentConfig.accumulator_mode) {
+                            const heatScore = info.advisor_score || 0;
+                            const hue = 240 + (heatScore * 1.2); 
+                            
+                            // VISUAL STATES
+                            let badgeBg, badgeShadow, badgeBorder, badgeTooltip;
+                            
+                            if (info.is_held) {
+                                // --- HELD (Active) ---
+                                // Show the dynamic Blue->Red color to indicate "Actionable"
+                                const color = `hsl(${hue}, 85%, 50%)`;
+                                badgeBg = color;
+                                badgeShadow = `0 0 8px ${color}`;
+                                badgeBorder = `1px solid rgba(255,255,255,0.3)`; // Bright border for emphasis
+                                badgeTooltip = `Portfolio Position\nScore: ${heatScore}/100\nClick to Manage`;
+                            } else {
+                                // --- NOT HELD (Inactive) ---
+                                // Greyed out. We still show the score, but it's "OFF"
+                                badgeBg = "#2c3e50"; // Dark Blue-Grey
+                                badgeShadow = "none";
+                                badgeBorder = "1px solid #444"; // Dim border
+                                badgeTooltip = `Watchlist Item\nScore: ${heatScore}/100`;
+                            }
+                            
+                            heatBadgeHTML = `
+                                <div class="heat-badge" 
+                                     onclick="openAdvisorModal('${symbol}', ${heatScore}, ${info.is_held})"
+                                     style="
+                                        background: ${badgeBg}; 
+                                        color: #fff; 
+                                        border: ${badgeBorder};
+                                        border-radius: 4px; 
+                                        font-weight: bold; 
+                                        min-width: 60px;
+                                        box-shadow: ${badgeShadow};
+                                        text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+                                        display: flex; align-items: center; justify-content: center;
+                                        height: 100%;
+                                        transition: all 0.2s;
+                                     " 
+                                     title="${badgeTooltip}">
+                                    ${info.is_held ? '🔥' : '🌡️'} ${heatScore}
+                                </div>
+                            `;
+                        }
+
+                        // B. Entry Labels & Liquidate Button Logic (RESTORED MISSING VARIABLES)
+                        let entryLabel = "P&L (%) / Avg Entry";
+                        let entryValueDisplay = "";
+                        let liquidateBtn = "";
+
+                        if (info.is_held) {
+                            // WE HOLD IT: Show P&L and Red Sell Button
+                            entryValueDisplay = `<span class="card-value ${pnlClass}">${pnl.toFixed(2)}%</span> / $${formatPrice(entry)}`;
+                            liquidateBtn = `
+                                <button onclick="liquidateAsset('${symbol}')" class="btn btn-red" style="min-width: 70px;" title="Force Sell 100%">
+                                    💣 SELL
+                                </button>
+                            `;
+                        } else {
+                            // WE DON'T HOLD IT: Show Last Sell and Disabled Button
+                            // Note: info.last_sell_price comes from your backend mapping
+                            entryLabel = "P&L / Last Sell";
+                            entryValueDisplay = `<span class="card-value ${pnlClass}">${pnl.toFixed(2)}%</span> / <span class="card-value">$${formatPrice(info.last_sell_price || 0)}</span>`;
+                            
+                            liquidateBtn = `
+                                <button class="btn btn-logic" disabled style="min-width: 70px; opacity: 0.4; cursor: not-allowed;" title="No Position">
+                                    SELL
+                                </button>
+                            `;
+                        }
+                        // --- V3.2 FACELIFT LOGIC END ---
+
+                        const cardHTML = `
+                            <div class="symbol-card" style="position: relative;">
+                                <h3>
+                                    <a href="${coinbaseUrl}" target="_blank" class="symbol-link" onclick="event.stopPropagation()">${symbol.replace('/USD', '')}</a> -
+                                    <span class="${statusClass}${status.includes('Analyzing') ? ' loading-ellipsis' : ''}">${status.includes('Analyzing') ? 'Analyzing' : status}</span>
+                                </h3>
+                                
+                                <div class="card-grid">
+                                    <div class="card-item">
+                                        <span class="card-label">Current Price</span>
+                                        <span class="card-value">$${formatPrice(price)}</span>
+                                    </div>
+                                    <div class="card-item">
+                                        <span class="card-label">Change (5m / 24h)</span>
+                                        <span class="card-value">
+                                            <span class="${changeClass}">${change_5m.toFixed(2)}%</span>
+                                            <span style="color: #666;"> / </span>
+                                            <span class="${change24Class}">${change_24h.toFixed(2)}%</span>
+                                        </span>
+                                    </div>
+                                    <div class="card-item">
+                                        <span class="card-label">${entryLabel}</span>
+                                        ${entryValueDisplay}
+                                    </div>
+                                    <div class="card-item">
+                                        <span class="card-label">Score (MTFA+MACD)</span>
+                                        <span class="card-value">${score.toFixed(3)}</span>
+                                    </div>
+                                    <div class="card-item">
+                                        <span class="card-label">RSI (1h)</span>
+                                        <span class="card-value">${rsi.toFixed(2)}</span>
+                                    </div>
+                                    <div class="card-item">
+                                        <span class="card-label">Strategy (ADX)</span>
+                                        <span class="card-value">
+                                            <span style="color: #3498DB;">${info.strategy || 'N/A'}</span> 
+                                            (<span class="${adxClass}">${adxVal.toFixed(2)}</span>)
+                                        </span>
+                                    </div>
+                                    <div class="card-item">
+                                        <span class="card-label">Volume (${vol_tf} / ${volLabel})</span>
+                                        <span class="card-value ${volClass}">(${formatLargeNumber(latest_vol)} / ${formatLargeNumber(volBenchmark)})</span>
+                                    </div>
+                                    <div class="card-item">
+                                        <span class="card-label">Trend (MA${ma_period} / SMA50)</span>
+                                        <span class="card-value">
+                                            <span class="${maClass}">$${formatPrice(ma_value)}</span>
+                                            <span style="color: #666;"> / </span>
+                                            <span style="color: #aaa;">$${formatPrice(info.local_sma)}</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="control-row">
+                                    ${heatBadgeHTML}
+                                    <button onclick="openAnalysisModal('${symbol}')" class="btn btn-logic" style="flex-grow: 1;">
+                                        Logic
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        dashboardGrid.innerHTML += cardHTML;
+                    }
+                }
+
+                // ==========================================
+                //  RESET BOT BUTTON LOGIC (Merged & Safe)
+                // ==========================================
+                const btnReset = document.getElementById("btn-reset-bot");
+
+                // SAFETY CHECK: Only run if button exists (Admin Mode)
+                if (btnReset) {
+                    
+                    // 1. Add the Click Listener (To open the modal)
+                    btnReset.addEventListener('click', function() {
+                        // Only open if not disabled
+                        if (!btnReset.disabled) {
+                            document.getElementById('modal-reset').style.display = 'block';
+                        }
+                    });
+
+                    // 2. Set Initial State based on Bot Status
+                    // (This ensures the button looks right immediately on page load)
+                    if (typeof is_running !== 'undefined') {
+                        if (is_running) {
+                            // Bot is RUNNING: Disable Reset
+                            btnReset.disabled = true;
+                            btnReset.style.opacity = "0.5";
+                            btnReset.style.cursor = "not-allowed";
+                            btnReset.title = "⚠️ Stop the bot first to perform a reset.";
+                            btnReset.innerHTML = "⚠️ Stop Bot to Reset"; 
+                        } else {
+                            // Bot is STOPPED: Enable Reset
+                            btnReset.disabled = false;
+                            btnReset.style.opacity = "1";
+                            btnReset.style.cursor = "pointer";
+                            btnReset.title = "Reset Bot Data...";
+                            btnReset.innerHTML = "⚠ Reset Bot Data...";
+                        }
+                    }
+                }
+
+            } catch (e) {
+                console.error("Failed to update dashboard:", e);
+            }
+        }
+            
+            async function getEvents() {
+                try {
+                    const response = await fetch(`${API_URL}/events`);
+                    const data = await response.json();
+                    
+                    if (data.events.length > 0) {
+                        if (disclaimerElement) {
+                            disclaimerElement.remove();
+                            disclaimerElement = null; 
+                        }
+                        
+                        data.events.forEach(eventObj => {
+                            const eventDiv = document.createElement('div');
+                            
+                            // Extract data safely
+                            const msgText = eventObj.message || eventObj; 
+                            const msgType = eventObj.type || 'info';
+                            
+                            eventDiv.textContent = msgText;
+                            
+                            // Apply Colors & Icons based on Type
+                            if (msgType === 'buy') {
+                                eventDiv.className = 'event-buy';
+                                eventDiv.textContent = "✅ " + msgText; 
+                            } 
+                            else if (msgType === 'sell') {
+                                eventDiv.className = 'event-sell';
+                                eventDiv.textContent = "🛑 " + msgText;
+                            } 
+                            else if (msgType === 'error') {
+                                eventDiv.className = 'event-sell'; 
+                                eventDiv.textContent = "⚠️ " + msgText; // Added Warning Icon
+                            }
+                            else if (msgType === 'success') {
+                                eventDiv.className = 'event-buy'; 
+                                eventDiv.textContent = "🚀 " + msgText; // Added Rocket Icon
+                            }
+                            else if (msgType === 'config') {
+                                eventDiv.className = 'event-buy'; // Keep it Green (Positive action)
+                                eventDiv.textContent = "📝 " + msgText; // Memo Icon
+                            }
+                            
+                            eventLogContent.prepend(eventDiv);
+                        });
+                    }
+                } catch (e) {
+                    console.error("Failed to get events:", e);
+                }
+            }
+            
+            async function switchProfile() {
+                const selector = document.getElementById('profile-selector');
+                if (!selector) return;
+                const profile = selector.value;
+                
+                if (!profile) return;
+
+                const confirmChange = confirm(`Load ${profile.toUpperCase()} profile? This will overwrite your current settings.`);
+                if (!confirmChange) {
+                    // Revert to previously saved profile if they cancel
+                    const savedProfile = localStorage.getItem('active_profile');
+                    selector.value = savedProfile || ""; 
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/set_profile', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ profile: profile })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        alert(`✅ Profile Loaded: ${profile.toUpperCase()}\nThe bot will use these settings next cycle.`);
+                        
+                        // [NEW] Save the active profile to browser storage
+                        localStorage.setItem('active_profile', profile);
+                        
+                        // Reload the config into the UI immediately
+                        await loadConfig(); 
+                        
+                    } else {
+                        alert('❌ Error: ' + data.message);
+                        // Revert dropdown on error
+                        const savedProfile = localStorage.getItem('active_profile');
+                        selector.value = savedProfile || ""; 
+                    }
+                } catch (error) {
+                    alert('❌ Network Error: ' + error);
+                }
+            }
+
+            // --- SAFE LISTENER HELPER (Prevents crashes in Guest Mode) ---
+            function addListener(id, event, handler) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener(event, handler);
+                }
+            }
+
+            // --- CORE CONTROLS ---
+            addListener('btn-start', 'click', startBot);
+            addListener('btn-stop', 'click', stopBot);
+            addListener('btn-save', 'click', saveConfig);       // Safe!
+            addListener('btn-portfolio', 'click', openPortfolio);
+            addListener('btn-help', 'click', openHelp);
+            addListener('btn-changelog', 'click', openChangelog);
+            addListener('btn-audit', 'click', runAudit);
+            
+            // --- JSON MODAL ---
+            addListener('btn-view-json', 'click', openJsonModal);
+            addListener('json-modal-close', 'click', closeJsonModal);
+            addListener('json-modal-close-2', 'click', closeJsonModal);
+            addListener('btn-save-raw-json', 'click', saveRawJson); // Safe!
+            
+            // --- SIZING TIERS MODAL ---
+            addListener('btn-edit-tiers', 'click', openSizingModal); 
+            addListener('sizing-modal-close', 'click', closeSizingModal);
+            addListener('sizing-modal-close-2', 'click', closeSizingModal);
+            addListener('btn-add-tier', 'click', addSizingTierRow);
+            addListener('btn-save-tiers', 'click', saveSizingTiers); // Safe!
+            
+            // --- PROFILE SELECTOR ---
+            addListener('profile-selector', 'change', switchProfile); // Safe!
+
+            // --- ANALYSIS MODAL HANDLERS ---
+            // We use the helper here too, passing the anonymous function as the handler
+            addListener('analysis-modal-close', 'click', () => {
+                const modal = document.getElementById('analysis-modal');
+                if (modal) modal.style.display = 'none';
+            });
+            addListener('analysis-modal-close-2', 'click', () => {
+                const modal = document.getElementById('analysis-modal');
+                if (modal) modal.style.display = 'none';
+            });
+                
+            // --- WINDOW CLICK (CLOSE MODALS) ---
+            window.addEventListener('click', (event) => {
+                // Ensure variables exist before checking equality (Prevent ReferenceError)
+                if (typeof jsonModal !== 'undefined' && event.target == jsonModal) closeJsonModal();
+                if (typeof sizingModal !== 'undefined' && event.target == sizingModal) closeSizingModal();
+                
+                const analysisModal = document.getElementById('analysis-modal');
+                if (analysisModal && event.target == analysisModal) {
+                    analysisModal.style.display = 'none';
+                }
+            });
+            
+            // Restore Strategy Profile Selection
+            const savedProfile = localStorage.getItem('active_profile');
+
+            if (savedProfile) {
+                const selector = document.getElementById('profile-selector');
+                
+                // SAFETY CHECK: Only run if the dropdown actually exists (Admin Mode)
+                if (selector) {
+                    // Verify the option actually exists in the dropdown before setting it
+                    if (selector.querySelector(`option[value="${savedProfile}"]`)) {
+                        selector.value = savedProfile;
+                    }
+                }
+            }
+
+            // Init
+            loadConfig();
+            setInterval(updateDashboard, 1000);
+            setInterval(getEvents, 3000);
+            
+        });
+        function liquidateAsset(symbol) {
+            if (!confirm(`⚠️ ARE YOU SURE?\n\nThis will SELL ALL ${symbol} on next cycle.`)) {
+                return;
+            }
+            fetch(`/api/liquidate/${encodeURIComponent(symbol)}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    if(d.status === 'success') alert("✅ SOLD: " + d.message);
+                    else alert("❌ ERROR: " + d.message);
+                });
+        }
+    </script> 
+    </div>
+</div>
+<div id="disclaimer-modal" style="display:flex; position:fixed; z-index:99999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center;">
+        <div style="background:#1a1a1a; border:1px solid #444; border-radius:8px; padding:30px; max-width:550px; width:90%; color:#eee; text-align:center;">
+            <h2 style="color:#F1C40F; margin-top:0;">⚠️ Risk Disclaimer</h2>
+            <p style="line-height:1.8; font-size:0.95em; color:#ccc; text-align:left;">
+                This software is provided strictly for <strong>educational and simulation purposes</strong>. It is NOT financial advice. Cryptocurrency trading involves <strong>substantial risk of loss</strong>.
+            </p>
+            <p style="line-height:1.8; font-size:0.95em; color:#ccc; text-align:left;">
+                This software is provided <strong>AS IS</strong> without warranty of any kind. By using this software, you acknowledge that the creators assume <strong>no liability</strong> for financial losses, damages, or unintended trades resulting from software bugs, market volatility, or API failures. <strong>You are solely responsible for your own capital and trading decisions.</strong>
+            </p>
+            <button id="btn-accept-disclaimer" style="margin-top:20px; padding:12px 40px; background:#2ECC71; color:#fff; border:none; border-radius:5px; font-size:1.1em; font-weight:bold; cursor:pointer;">
+                I Understand & Accept the Risk
+            </button>
+            <p style="margin-top:15px; font-size:0.85em; color:#666;">
+                <a href="https://github.com/Lecheric/cryptopi" target="_blank" style="color:#3498DB; text-decoration:none;">GitHub</a>
+                &nbsp;·&nbsp;
+                <span id="donate-toggle" style="color:#F1C40F; cursor:pointer;">☕ Tip the Dev (Crypto)</span>
+            </p>
+            <p style="margin-top:5px; font-size:0.8em; color:#555;">
+                Report bugs, request features, or contribute on GitHub.
+            </p>
+            <div id="donate-info" style="display:none; margin-top:15px; background:#111; border:1px solid #333; border-radius:5px; padding:20px; text-align:left; font-size:0.9em;">
+                <p style="color:#ccc; margin:0 0 15px 0; font-weight:bold;">Send a tip to support development:</p>
+                <div style="margin-bottom:15px;">
+                    <span style="color:#627EEA; font-weight:bold; font-size:0.9em;">ETH — Ethereum Network Only</span>
+                    <div style="margin-top:6px; background:#1a1a1a; border:1px solid #333; border-radius:4px; padding:10px;">
+                        <code id="wallet-eth" onclick="window.getSelection().selectAllChildren(this)" style="display:block; word-break:break-all; font-size:0.85em; cursor:pointer; user-select:all; color:#eee; line-height:1.6;">0x86FeD3515993b5C4dC8961D43d92904b7c3ED6A7</code>
+                    </div>
+                </div>
+                <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
+                <div>
+                    <span style="color:#F7931A; font-weight:bold; font-size:0.9em;">BTC — Bitcoin Network Only</span>
+                    <div style="margin-top:6px; background:#1a1a1a; border:1px solid #333; border-radius:4px; padding:10px;">
+                        <code id="wallet-btc" onclick="window.getSelection().selectAllChildren(this)" style="display:block; word-break:break-all; font-size:0.85em; cursor:pointer; user-select:all; color:#eee; line-height:1.6;">17Mm5PkZJuQc2rKzRJ22ZJMBcBMdgMYSKc</code>
+                    </div>
+                </div>
+                <p style="color:#555; font-size:0.8em; margin:12px 0 0 0; text-align:center;">Thank you for the support ♥</p>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script>
+        document.getElementById('btn-accept-disclaimer').addEventListener('click', function() {
+            document.getElementById('disclaimer-modal').style.display = 'none';
+        });
+        document.getElementById('donate-toggle').addEventListener('click', function() {
+            var info = document.getElementById('donate-info');
+            info.style.display = info.style.display === 'none' ? 'block' : 'none';
+        });
+    </script>
+</body>
+</html>
