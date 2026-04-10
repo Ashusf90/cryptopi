@@ -121,6 +121,13 @@ cryptopi/
 ├── trading_bot.py            # Core trading engine
 ├── config.json               # Active bot configuration (generated)
 ├── config.example.json       # Template configuration
+├── config_default.json       # Strategy profile: Standard
+├── config_safe.json          # Strategy profile: Safe (Scalper)
+├── config_scarcity.json      # Strategy profile: Scarcity (Trend)
+├── config_volatile.json      # Strategy profile: Volatile (Degen)
+├── config_sniper.json        # Strategy profile: Sniper
+├── config_turbo.json         # Strategy profile: Turbo
+├── config_tester.json        # Strategy profile: Tester
 ├── coinbase_keys.json        # Your API keys (generated, git-ignored)
 ├── coinbase_keys.example.json# Template for API keys
 ├── .env                      # Dashboard credentials (generated, git-ignored)
