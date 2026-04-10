@@ -8,7 +8,6 @@ trades.db
 portfolio.json
 optimizer.db
 config.json
-config_*.json
 config_*.old
 
 # --- Logs & History ---

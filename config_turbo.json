@@ -1,0 +1,130 @@
+{
+  "adx_period": 14,
+  "adx_trending_threshold": 20.0,
+  "strategy_profile": "standard", 
+  "event_horizon_config": {
+    "enabled": true,
+    "accumulator_buy_amount_usd": 250.0,
+    "max_asset_allocation_pct": 0.20,
+    "min_cash_reserve_pct": 0.10,
+    "cooldown_hours": 4,
+    "strict_rsi_threshold": 25,
+    "emergency_stop_pct": -50.0
+  },
+  "allow_scaling_in": false,
+  
+  "atr_stop_loss_config": {
+    "multiplier": 1.5,
+    "period": 14,
+    "timeframe": "1h"
+  },
+  
+  "bear_trend_safety_lock": true,
+  "bear_bounce_rsi_threshold": 30, 
+  "bull_bear_modifier": 0.15,
+  
+  "check_interval_seconds": {
+    "ranging": 45,
+    "trending": 30
+  },
+  
+  "colors": {
+    "negative": [231, 76, 60],
+    "neutral": [77, 160, 230],
+    "positive": [46, 204, 113]
+  },
+  
+  "dip_buy_allocation_percent": 0.20,
+  "dip_buy_atr_multiplier": 1.2,
+  
+  "dynamic_symbols_config": {
+    "blacklist": ["MON/USD", "GYEN/USD", "MSOL/USD", "PAX/USD"],
+    "enabled": true,
+    "quote_currency": "USD",
+    "scanner_mode": "VOLATILITY",
+    "top_n_symbols": 12
+  },
+  
+  "exchange": "coinbase",
+  
+  "fees": {
+    "maker_percent": 0.4,
+    "taker_percent": 0.6
+  },
+  
+  "live_trading": false,
+  "low_funds_threshold": 10,
+  
+  "ma_filter_config": {
+    "enabled": true,
+    "period": 8,
+    "timeframe": "1h"
+  },
+  
+  "macd_config": {
+    "timeframe": "1h",
+    "fast": 6,
+    "slow": 13,
+    "signal": 4
+  },
+  "macd_score_weight": 1.2,
+  
+  "market_regime_index": "BTC/USD",
+  "max_open_positions": 5,
+  "min_trade_size": 15,
+  
+  "neutral_buy_threshold": 0.25,
+  "neutral_sell_threshold": -0.25,
+  
+  "profit_sweeping": {
+    "enabled": true,
+    "asset_to_buy": "USDC/USD",
+    "sweep_threshold": 100,
+    "keep_buffer": 0
+  },
+  
+  "rsi_config": {
+  "overbought": 95,
+  "oversold": 30,
+  "period": 14
+  },
+  
+  "sizing_tiers": [
+    [0.25, 0.20],
+    [1.50, 0.35]
+  ],
+  
+  "starting_capital": 10000,
+  
+  "symbol_list": [
+    "SOL/USD", "DOGE/USD", "ETH/USD", "LINK/USD",
+    "XRP/USD", "ADA/USD", "AVAX/USD", "SHIB/USD"
+  ],
+  
+  "take_profit_config": {
+    "atr_multiplier": 2.5,
+    "use_atr_take_profit": true
+  },
+  "take_profit_percent": 2.5,
+  
+  "timeframe_weights_ranging": {
+    "1m": 0.50, "1h": 0.50, "6h": 0.00, "1d": 0.00
+  },
+  "timeframe_weights_trending": {
+    "1m": 0.60, "1h": 0.40, "6h": 0.00, "1d": 0.00
+  },
+  
+  "trailing_stop_loss_percent": -3.0,
+  
+  "volume_confirmation": {
+    "enabled": false,
+    "multiplier": 1.0,
+    "period": 12,
+    "timeframe": "1d"
+  },
+  
+  "warmup_config": {
+    "cycles": 1,
+    "enabled": true
+  }
+}

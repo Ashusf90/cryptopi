@@ -1,0 +1,162 @@
+{
+  "rsi_oversold_override": 25,
+  "scarcity_mode_enabled": true,
+  "adx_period": 12,
+  "adx_trending_threshold": 21.2,
+  "strategy_profile": "standard", 
+  "event_horizon_config": {
+    "enabled": true,
+    "accumulator_buy_amount_usd": 250.0,
+    "max_asset_allocation_pct": 0.20,
+    "min_cash_reserve_pct": 0.10,
+    "cooldown_hours": 4,
+    "strict_rsi_threshold": 25,
+    "emergency_stop_pct": -50.0
+  },
+  "max_portfolio_exposure": 0.5,
+  "allow_scaling_in": false,
+  "atr_stop_loss_config": {
+    "multiplier": 2.11,
+    "period": 14,
+    "timeframe": "1h"
+  },
+  "bear_trend_safety_lock": false,
+  "bull_bear_modifier": 1.1,
+  "check_interval_seconds": {
+    "ranging": 300,
+    "trending": 60
+  },
+  "colors": {
+    "negative": [
+      231,
+      76,
+      60
+    ],
+    "neutral": [
+      77,
+      160,
+      230
+    ],
+    "positive": [
+      46,
+      204,
+      113
+    ]
+  },
+  "dip_buy_allocation_percent": 0.27,
+  "dip_buy_atr_multiplier": 1.8,
+  "dynamic_symbols_config": {
+    "blacklist": [
+      "MON/USD",
+      "GYEN/USD",
+      "MSOL/USD",
+      "IRYS/USD"
+    ],
+    "enabled": true,
+    "quote_currency": "USD",
+    "scanner_mode": "VOLATILITY",
+    "top_n_symbols": 15
+  },
+  "exchange": "coinbase",
+  "fees": {
+    "maker_percent": 0.4,
+    "taker_percent": 0.6
+  },
+  "live_trading": false,
+  "low_funds_threshold": 10,
+  "ma_filter_config": {
+    "enabled": true,
+    "period": 4,
+    "timeframe": "1h"
+  },
+  "macd_config": {
+    "timeframe": "1h",
+    "fast": 12,
+    "slow": 26,
+    "signal": 9
+  },
+  "macd_score_weight": 1.85,
+  "market_regime_index": "BTC/USD",
+  "max_24h_change_threshold": 30,
+  "max_open_positions": 5,
+  "min_trade_size": 10,
+  "neutral_buy_threshold": 1.4,
+  "neutral_sell_threshold": -15.63,
+  "profit_sweeping": {
+    "enabled": true,
+    "asset_to_buy": "USDC/USD",
+    "sweep_threshold": 500,
+    "keep_buffer": 0
+  },
+  "rsi_config": {
+    "overbought": 85,
+    "oversold": 30,
+    "period": 19
+  },
+  "sizing_tiers": [
+    [
+      2.1,
+      0.45
+    ],
+    [
+      0.5,
+      0.3
+    ]
+  ],
+  "starting_capital": 10000,
+  "symbol_list": [
+    "LINK/USD",
+    "ETH/USD",
+    "HBAR/USD",
+    "DOGE/USD",
+    "SOL/USD",
+    "XRP/USD",
+    "ZEC/USD",
+    "ADA/USD"
+  ],
+  "take_profit_config": {
+    "atr_multiplier": 5.5,
+    "use_atr_take_profit": true
+  },
+  "take_profit_percent": 10,
+  "timeframe_weights_ranging": {
+    "1m": 0.42,
+    "1h": 0.69,
+    "6h": 0.29,
+    "1d": 0.64
+  },
+  "timeframe_weights_trending": {
+    "1m": 0.6,
+    "1h": 1,
+    "6h": 0.3,
+    "1d": 0.1
+  },
+  "trailing_stop_loss_percent": -8.0,
+  "volume_confirmation": {
+    "enabled": true,
+    "multiplier": 1.6,
+    "period": 10,
+    "timeframe": "1d"
+  },
+  "volume_scoring": {
+        "enabled": true,
+        "dump_penalty": 2.0,
+        "pump_boost": 0.5,
+        "low_vol_decay": 0.8,
+        "dump_threshold_percent": -2.0,
+        "pump_threshold_percent": 2.0,
+        "high_vol_ratio": 1.5,
+        "low_vol_ratio": 0.3
+    },
+    "funding_monitor": {
+        "enabled": true,
+        "high_funding_threshold": 0.02,
+        "extreme_funding_threshold": 0.05,
+        "high_funding_penalty": 2.0,
+        "negative_funding_boost": 1.0
+    },
+  "warmup_config": {
+    "cycles": 3,
+    "enabled": true
+  }
+}
