@@ -106,8 +106,9 @@ cryptopi/
 ├── static/                   # CSS, favicon, assets
 │   └── style.css
 └── strategies/               # Modular strategy engines
-    ├── standard.py
-    └── accumulator.py
+    ├── standard.py           # decide_action function to use buy/sell logic
+    └── accumulator.py        # decide_action function to use DCA Buy only logic
+    
 Security Model
 Local-Only Binding: The dashboard binds to 127.0.0.1, making it invisible to the public internet.
 The .env Protocol: API keys and credentials live in .env and coinbase_keys.json, both excluded from Git via .gitignore.
@@ -120,6 +121,11 @@ The "Enable Live Trading" toggle exists in the dashboard UI but does nothing. Li
 
 If you want to enable live trading, you'll need to find the override in the source code and remove it yourself. You do this entirely at your own risk. The developers assume no liability for any trades executed in Live Mode.
 License
+
+Known Issues & Limitations
+Hardcoded Exchange Fees: Currently, the P&L calculations and Stop-Loss triggers rely on a hardcoded Maker/Taker fee percentage in config.json.
+Live Trading Discrepancy: In Live Trading mode, actual fees fluctuate based on Coinbase volume tiers. The bot currently does not dynamically adjust to these real-world fees, meaning reported P&L in the dashboard may slightly deviate from your actual exchange balance.
+Needed Fix: The live execution logic needs to be updated to parse the exact fee value returned by the Coinbase API Order Response and record that true value into the database.
 
 This project is licensed under the MIT License.
 

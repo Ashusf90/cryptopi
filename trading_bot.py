@@ -1197,8 +1197,7 @@ def start_bot_logic(bot_status, log_queue, event_queue):
             # =====================================================================
             # 🔒 LIVE TRADING OVERRIDE — DISABLED FOR OPEN-SOURCE RELEASE
             # The UI toggle still exists but is forcibly overridden here.
-            # To enable live trading, remove or comment out the next line
-            # and uncomment the original line below it.
+            # Fix it at your own risk.
             # =====================================================================
             IS_LIVE_TRADING = False  # FORCED GHOST MODE
             # IS_LIVE_TRADING = config.get("live_trading", False)  # ORIGINAL
