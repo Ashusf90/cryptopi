@@ -117,13 +117,11 @@ def init_database():
     conn.close()
     log_analysis("Database (trades.db) initialized/verified.")
 
-def record_trade(symbol, action, price, amount, score, market_regime, market_character, logic_dict=None):
-    conn = sqlite3.connect('trades.db')
+def record_trade(symbol, action, price, amount, score, market_regime, market_character, logic_dict=None, fee=0.0):    conn = sqlite3.connect('trades.db')
     cursor = conn.cursor()
     logic_json = json.dumps(logic_dict) if logic_dict else "{}"
     cursor.execute('''
-    INSERT INTO trades (timestamp, symbol, action, price, amount, score, regime, character, logic_metadata)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO trades (timestamp, symbol, action, price, amount, score, regime, character, logic_metadata, fee)    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         symbol,
@@ -133,7 +131,7 @@ def record_trade(symbol, action, price, amount, score, market_regime, market_cha
         float(f"{score:.2f}"), 
         market_regime,
         market_character,
-        logic_json 
+        logic_json, fee
     ))
     conn.commit()
     conn.close()
